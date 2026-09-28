@@ -1,4 +1,5 @@
 param([switch]$DocsOnly, [switch]$Database)
+#requires -Version 7.0
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 function Run([string]$directory, [string]$tool, [string[]]$arguments) {
@@ -8,7 +9,7 @@ function Run([string]$directory, [string]$tool, [string[]]$arguments) {
         if ($LASTEXITCODE -ne 0) { throw "$tool failed with exit code $LASTEXITCODE" }
     } finally { Pop-Location }
 }
-Run '.' 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-doc-governance.ps1')
+Run '.' 'pwsh' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-doc-governance.ps1')
 $contract = Get-Content (Join-Path $root 'constras/platform/live.openapi.json') -Raw | ConvertFrom-Json
 if ($contract.openapi -ne '3.1.0' -or $contract.paths.'/health/live'.get.operationId -ne 'getLiveness') {
     throw 'Liveness contract is missing or inconsistent'
@@ -20,7 +21,7 @@ if ($DocsOnly) {
 Run 'backend' 'go' @('test', './...')
 Run 'backend' 'go' @('vet', './...')
 if ($Database) {
-    Run '.' 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-database.ps1')
+    Run '.' 'pwsh' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-database.ps1')
 } else {
     Write-Output 'NOTE: real PostgreSQL integration skipped; use -Database with POSTGRES_PASSWORD.'
 }

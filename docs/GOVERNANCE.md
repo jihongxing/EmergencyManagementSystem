@@ -24,7 +24,7 @@
 本地轻量检查：[check-doc-governance.ps1](../scripts/test/check-doc-governance.ps1)。在仓库根目录运行：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test/check-doc-governance.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/check-doc-governance.ps1
 ```
 
 脚本检查入口、现行本地链接、专题状态、表格列数及派生契约条目编号；还会实际解析 `constras/` 下同名 JSON、核对 Markdown 条款覆盖并执行机器策略的正反案例。不验证外部网址、法律效力、所有 Markdown 特性或契约与 SSOT 的语义一致性，后者仍须人工复核；JSON 策略不替代业务代码测试。
