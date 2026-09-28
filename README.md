@@ -45,4 +45,4 @@ podman compose -f infra/compose.yaml ps
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1
 ```
 
-仅查文档时显式加 `-DocsOnly`，不等于工程验证通过。依赖锁文件应纳入版本控制，不提交密钥、真实证据或模拟行政授权。本地 Git/main 已初始化，尚无提交/远程，远程 CI 未运行。Node 复现版本见 `.nvmrc`，Web 干净安装使用 `npm ci`。
+仅查文档时显式加 `-DocsOnly`，不等于工程验证通过。依赖锁文件已入库，不提交密钥、真实证据或模拟行政授权。GitHub origin 已建立，远程 preflight 已通过；main 要求 PR 与状态检查，后续使用任务分支。Node 复现版本见 `.nvmrc`，Web 干净安装使用 `npm ci`。实际 CI 与保护证据见[任务记录](docs/development-tasks.md)。

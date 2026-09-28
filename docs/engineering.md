@@ -24,9 +24,9 @@
 
 本机容器使用 Podman；PostgreSQL 开发配置见 [compose](../infra/compose.yaml)。启动前设置本地密码，禁止无意删除命名数据卷。正式部署、文件服务和备份方案仍待实施选型。
 
-本地 Git/main 已建立但尚无提交或远程，等待用户指定仓库与访问方式。远程建立后采用短分支、评审、主分支保护；CI 使用与本地相同检查入口，并增加 macOS iOS 构建。当前没有运行过远程 CI，不宣称门禁已生效。Node 使用 `.nvmrc` 与 workflow 对齐的 22.23.2，Web 使用 `npm ci` 安装锁定依赖。
+GitHub origin 已建立，采用任务短分支和 PR。main 要求 preflight 成功、分支最新及讨论解决，保护适用于管理员且禁止强推/删除；单人维护暂设额外审批数 0，不宣称独立人工审查。保护配置见[记录](../.github/main-protection.json)，实际运行证据见[任务清单](development-tasks.md)。Node 使用 `.nvmrc` 与 workflow 对齐的 22.23.2，Web 使用 `npm ci` 安装锁定依赖。
 
-已提供 [GitHub Actions 基础检查](../.github/workflows/verify.yml)，使用锁文件安装与统一预检；移动端原生目录和锁文件已补齐，本地预检通过。macOS 原生构建任务需在分发标识确定后补齐。CI 未运行前不能标记为验证通过。
+已运行 [GitHub Actions 基础检查](../.github/workflows/verify.yml)，使用锁文件安装与统一预检，首次远程运行已成功。macOS 原生构建任务仍需在 P0-05 补齐，不将 analyze/widget 测试当原生构建。
 
 本机使用 v2rayN。CLI 不一定继承系统代理；网络超时时可仅在当前进程设置 `HTTP_PROXY`、`HTTPS_PROXY` 及本地地址的 `NO_PROXY`，端口以本机代理实际配置为准，不提交个人代理设置，不擅改全局配置。Flutter 即使使用 `--offline` 创建模板也可能先补齐缺失的 SDK 组件，须查看实际下载日志。
 
