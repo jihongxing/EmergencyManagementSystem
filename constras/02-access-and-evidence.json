@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "source": "02-access-and-evidence.md",
+  "manualClauses": ["C02-01", "C02-02"],
+  "policies": [
+    {
+      "id": "enterprise-executor-record-access",
+      "clauses": ["C02-03", "C02-04", "C02-07"],
+      "facts": ["activeExecutor", "sameOrganization", "assignedScope"],
+      "allowWhen": {"activeExecutor": true, "sameOrganization": true, "assignedScope": true},
+      "cases": [
+        {"name": "assigned active executor", "input": {"activeExecutor": true, "sameOrganization": true, "assignedScope": true}, "allowed": true},
+        {"name": "revoked executor", "input": {"activeExecutor": false, "sameOrganization": true, "assignedScope": true}, "allowed": false},
+        {"name": "other organization even if subscribed", "input": {"activeExecutor": true, "sameOrganization": false, "assignedScope": true}, "allowed": false},
+        {"name": "unassigned site", "input": {"activeExecutor": true, "sameOrganization": true, "assignedScope": false}, "allowed": false}
+      ]
+    },
+    {
+      "id": "department-evidence-read",
+      "clauses": ["C02-05", "C02-06"],
+      "facts": ["activeDepartmentMember", "confirmedBinding", "dutyVerified", "recordAccessGranted", "evidenceSharingVerified"],
+      "allowWhen": {"activeDepartmentMember": true, "confirmedBinding": true, "dutyVerified": true, "recordAccessGranted": true, "evidenceSharingVerified": true},
+      "cases": [
+        {"name": "verified shared evidence", "input": {"activeDepartmentMember": true, "confirmedBinding": true, "dutyVerified": true, "recordAccessGranted": true, "evidenceSharingVerified": true}, "allowed": true},
+        {"name": "binding alone does not share photographs", "input": {"activeDepartmentMember": true, "confirmedBinding": true, "dutyVerified": true, "recordAccessGranted": true, "evidenceSharingVerified": false}, "allowed": false}
+      ]
+    }
+  ]
+}

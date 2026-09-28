@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "source": "04-subscription.md",
+  "manualClauses": ["C04-05"],
+  "policies": [
+    {
+      "id": "cross-site-convenience",
+      "clauses": ["C04-01", "C04-03", "C04-04"],
+      "facts": ["sameOrganization", "adminAuthorized", "serverConfirmedEntitlement", "entitlementActive"],
+      "allowWhen": {"sameOrganization": true, "adminAuthorized": true, "serverConfirmedEntitlement": true, "entitlementActive": true},
+      "cases": [
+        {"name": "active paid organization administrator", "input": {"sameOrganization": true, "adminAuthorized": true, "serverConfirmedEntitlement": true, "entitlementActive": true}, "allowed": true},
+        {"name": "client-only payment success", "input": {"sameOrganization": true, "adminAuthorized": true, "serverConfirmedEntitlement": false, "entitlementActive": true}, "allowed": false},
+        {"name": "expired entitlement", "input": {"sameOrganization": true, "adminAuthorized": true, "serverConfirmedEntitlement": true, "entitlementActive": false}, "allowed": false},
+        {"name": "cross-organization access", "input": {"sameOrganization": false, "adminAuthorized": true, "serverConfirmedEntitlement": true, "entitlementActive": true}, "allowed": false}
+      ]
+    },
+    {
+      "id": "free-site-workflow",
+      "clauses": ["C04-02", "C04-04"],
+      "facts": ["sameOrganization", "activeExecutor", "assignedSite"],
+      "allowWhen": {"sameOrganization": true, "activeExecutor": true, "assignedSite": true},
+      "cases": [
+        {"name": "unsubscribed assigned executor", "input": {"sameOrganization": true, "activeExecutor": true, "assignedSite": true}, "allowed": true},
+        {"name": "unassigned site", "input": {"sameOrganization": true, "activeExecutor": true, "assignedSite": false}, "allowed": false}
+      ]
+    }
+  ]
+}

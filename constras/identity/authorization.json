@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "clauses": ["C02-01", "C02-03", "C02-04"],
+  "cases": [
+    {"name":"enterprise administrator","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin"]},"target":"o1","expected":"allowed"},
+    {"name":"department administrator","member":{"userId":"u1","organizationId":"o1","organizationKind":"department","active":true,"roles":["department_admin"]},"target":"o1","expected":"allowed"},
+    {"name":"combined enterprise roles","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin","enterprise_executor"]},"target":"o1","expected":"allowed"},
+    {"name":"executor cannot manage members","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_executor"]},"target":"o1","expected":"role_denied"},
+    {"name":"inspector cannot manage members","member":{"userId":"u1","organizationId":"o1","organizationKind":"department","active":true,"roles":["inspector"]},"target":"o1","expected":"role_denied"},
+    {"name":"revoked member","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":false,"roles":["enterprise_admin"]},"target":"o1","expected":"inactive"},
+    {"name":"cross organization","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin"]},"target":"o2","expected":"scope_denied"},
+    {"name":"mixed organization roles","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin","inspector"]},"target":"o1","expected":"invalid_identity"},
+    {"name":"unknown role","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["super_admin"]},"target":"o1","expected":"invalid_identity"},
+    {"name":"missing identity","member":{"userId":"","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin"]},"target":"o1","expected":"invalid_identity"},
+    {"name":"unknown organization","member":{"userId":"u1","organizationId":"o1","organizationKind":"province","active":true,"roles":["department_admin"]},"target":"o1","expected":"invalid_identity"},
+    {"name":"no roles","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":[]},"target":"o1","expected":"invalid_identity"},
+    {"name":"duplicate roles","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin","enterprise_admin"]},"target":"o1","expected":"invalid_identity"},
+    {"name":"empty target","member":{"userId":"u1","organizationId":"o1","organizationKind":"enterprise","active":true,"roles":["enterprise_admin"]},"target":"","expected":"scope_denied"}
+  ]
+}

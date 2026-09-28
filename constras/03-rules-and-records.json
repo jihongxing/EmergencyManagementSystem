@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "source": "03-rules-and-records.md",
+  "manualClauses": ["C03-03", "C03-04", "C03-05", "C03-08"],
+  "policies": [
+    {
+      "id": "official-inspection-create",
+      "clauses": ["C03-01", "C03-02", "C03-06", "C03-07"],
+      "facts": ["inspectorIdentityVerified", "inspectorQualified", "departmentAuthorized", "siteBound", "itemVerified", "startBasisVerified", "procedureVerified", "onSiteScanVerified"],
+      "allowWhen": {"inspectorIdentityVerified": true, "inspectorQualified": true, "departmentAuthorized": true, "siteBound": true, "itemVerified": true, "startBasisVerified": true, "procedureVerified": true, "onSiteScanVerified": true},
+      "cases": [
+        {"name": "verified on-site start without prebuilt task", "input": {"inspectorIdentityVerified": true, "inspectorQualified": true, "departmentAuthorized": true, "siteBound": true, "itemVerified": true, "startBasisVerified": true, "procedureVerified": true, "onSiteScanVerified": true}, "allowed": true},
+        {"name": "scan alone is not authority", "input": {"inspectorIdentityVerified": true, "inspectorQualified": true, "departmentAuthorized": true, "siteBound": true, "itemVerified": true, "startBasisVerified": false, "procedureVerified": true, "onSiteScanVerified": true}, "allowed": false},
+        {"name": "unverified inspector identity", "input": {"inspectorIdentityVerified": false, "inspectorQualified": true, "departmentAuthorized": true, "siteBound": true, "itemVerified": true, "startBasisVerified": true, "procedureVerified": true, "onSiteScanVerified": true}, "allowed": false},
+        {"name": "unverified item", "input": {"inspectorIdentityVerified": true, "inspectorQualified": true, "departmentAuthorized": true, "siteBound": true, "itemVerified": false, "startBasisVerified": true, "procedureVerified": true, "onSiteScanVerified": true}, "allowed": false},
+        {"name": "no valid on-site scan", "input": {"inspectorIdentityVerified": true, "inspectorQualified": true, "departmentAuthorized": true, "siteBound": true, "itemVerified": true, "startBasisVerified": true, "procedureVerified": true, "onSiteScanVerified": false}, "allowed": false}
+      ]
+    }
+  ]
+}

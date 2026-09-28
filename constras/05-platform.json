@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "source": "05-platform.md",
+  "manualClauses": ["C05-01", "C05-02", "C05-04", "C05-05", "C05-06"],
+  "policies": [
+    {
+      "id": "formal-online-submission",
+      "clauses": ["C05-03"],
+      "facts": ["serverConfirmed"],
+      "allowWhen": {"serverConfirmed": true},
+      "cases": [
+        {"name": "confirmed", "input": {"serverConfirmed": true}, "allowed": true},
+        {"name": "network interrupted before confirmation", "input": {"serverConfirmed": false}, "allowed": false}
+      ]
+    }
+  ]
+}
