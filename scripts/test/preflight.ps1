@@ -1,4 +1,4 @@
-param([switch]$DocsOnly)
+param([switch]$DocsOnly, [switch]$Database)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 function Run([string]$directory, [string]$tool, [string[]]$arguments) {
@@ -19,6 +19,11 @@ if ($DocsOnly) {
 }
 Run 'backend' 'go' @('test', './...')
 Run 'backend' 'go' @('vet', './...')
+if ($Database) {
+    Run '.' 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-database.ps1')
+} else {
+    Write-Output 'NOTE: real PostgreSQL integration skipped; use -Database with POSTGRES_PASSWORD.'
+}
 Run 'apps/admin-web' 'npm.cmd' @('run', 'build')
 Run 'apps/admin-web' 'npm.cmd' @('test')
 foreach ($platform in @('android', 'ios')) {

@@ -1,0 +1,16 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Database readiness", "version": "0.1.0"},
+  "paths": {
+    "/health/ready": {
+      "get": {
+        "operationId": "getReadiness",
+        "security": [],
+        "responses": {
+          "200": {"description": "Database reachable and migration baseline available", "content": {"application/json": {"schema": {"type": "object", "required": ["status"], "additionalProperties": false, "properties": {"status": {"const": "ready"}}}}}},
+          "503": {"description": "Database or migration baseline unavailable", "content": {"application/json": {"schema": {"type": "object", "required": ["status"], "additionalProperties": false, "properties": {"status": {"const": "not_ready"}}}}}}
+        }
+      }
+    }
+  }
+}

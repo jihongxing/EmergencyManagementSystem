@@ -22,6 +22,8 @@
 
 ## 使用约定
 
+P0-03 数据库连接与迁移见[基础契约](platform/database.md)和[就绪 OpenAPI](platform/ready.openapi.json)，Go HTTP 测试实际解析状态响应，专用数据库集成测试验证迁移及就绪。
+
 身份模块首个内部授权单元见 [identity](identity/README.md)：机器案例直接由 Go 测试解析执行；不提供登录、账号开通或行政资格认定。
 
 工程存活接口见 [live.openapi.json](platform/live.openapi.json)，派生于平台契约的 Go 单体运行形态，仅表示进程存活，不代表业务或行政依据就绪。由统一预检进行基本结构解析，由 Go HTTP 测试检查响应。

@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | P0-01 / DONE | 方案与工程基线对齐；用户已确认最小选型 | [基线核对](engineering-baseline.md)完成；技术 SSOT、决策索引、OPEN、技术方案及平台契约已同步，保留待决与发布边界 |
 | P0-02 / DONE | 版本控制与实际 CI；用户已指定 GitHub 仓库 | 基线已推送，实际 CI 运行 36445834084 成功；main 要求 PR、最新分支与 preflight，通过 API 回读确认保护生效；不包含原生构建 |
-| P0-03 / PARTIAL | 本地与测试环境可复现；依赖 P0-01 | Podman 实际启动 PostgreSQL，服务连接、就绪与存活分离；环境样例不含秘密；空库迁移执行机制、停止/重启数据保留与故障测试；私有文件基础能力在 P2-02 接入、检查证据在 P3-02 扩展 |
+| P0-03 / DONE | 本地与测试环境可复现；依赖 P0-01 | 已提供[运行说明](database-development.md)、连接/就绪契约与独立迁移，实际 PostgreSQL 集成及重启保留验证通过；无业务表，远程 CI 数据库集成尚未接入 |
 | P0-04 / PARTIAL | 机器契约门禁；依赖 P0-01 | 现有判定 JSON、身份案例和 OpenAPI 全部有实际校验入口；引入完整规范校验及响应验证、引用/未知字段/错误案例负测；损坏契约使门禁失败，不能仅检查文件存在 |
 | P0-05 / PARTIAL | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
 | P0-06 / TODO | 基线验收；依赖 P0-02 至 P0-05 | 从干净检出按 README 安装并预检，记录工具版本、命令、CI 与双端证据；更新路线图，请用户验收 |
@@ -155,3 +155,14 @@
 - 基线创建后切到 `chore/p0-02-remote-governance`，治理文档通过 PR 推进，不绕过主分支保护。
 - CI 成功但提示 checkout@v4、setup-go@v5、setup-node@v4 的 Node 20 action 运行时已被 runner 转为 Node 24；列为后续兼容性维护，不与应用 Node 22.23.2 混淆。
 - P0-02 已达到任务验收；Android/iOS 实际构建仍属 P0-05，整个 P0 尚未验收。
+
+## P0-03 执行记录
+
+- 完成验证日期：2026-09-29（本机 Asia/Shanghai，任务跨日执行）。
+
+- 前置：用户要求先合并 PR #1，再执行本任务；PR #1 已正常合并为 `8902f4e`，分支 `feat/p0-03-database` 从更新后的 main 创建。
+- 契约先行：[数据库基础](../constras/platform/database.md)与[就绪接口](../constras/platform/ready.openapi.json)。pgx database/sql 与 Goose 作为本任务工程实现锁定于 go.mod/go.sum，不确定生产供应商；保留显式 SQL 与独立迁移边界。
+- 交付：必填且不泄露秘密的连接配置、2 秒就绪期限、版本检查、独立向前迁移命令、仅 schema/迁移元数据的首迁移；Podman 独立项目名和固定镜像 digest、回环端口 55472、命名卷及环境样例。
+- 实际验证：`preflight.ps1 -Database` 通过文档、Go test/vet、真实 PostgreSQL 集成、Web 构建/测试、Flutter analyze/test；空库 503、迁移后 200、重复迁移、失败事务回滚、不可达库和存活分离、停止/重启版本保留均覆盖。
+- 环境影响：仅创建并重启本项目 `ems-dev-postgres-1`；保留测试库和命名卷，未删除其他项目数据。密码为本机临时随机值，不打印/提交，接管方法见运行说明。
+- 限制：Windows 远程 CI 普通预检显式跳过数据库集成；未验证生产权限拆分、备份恢复、并发部署迁移或原生移动构建。下一任务 P0-04，不进入身份业务。

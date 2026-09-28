@@ -1,5 +1,7 @@
 # 文档地图
 
+P0-03 操作入口：[数据库开发环境](database-development.md)，包含连接配置、独立迁移、就绪与实际集成验证。
+
 工程入口：[项目 README](../README.md)、[工程治理](engineering.md)、[路线图](../ROADMAP.md)。已建立最小工程骨架，完整验证进度以路线图为准。
 
 开发执行入口：[详细任务分解](development-tasks.md)。路线图定义阶段与退出门槛，任务清单维护依赖、验收及状态；计划已批准，不替代产品 SSOT。P0-01 的已批准最小选型及保留边界见[工程基线](engineering-baseline.md)。
