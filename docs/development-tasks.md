@@ -15,7 +15,7 @@
 | ID / 状态 | 任务与依赖 | 交付及验收标准 |
 | --- | --- | --- |
 | P0-01 / DONE | 方案与工程基线对齐；用户已确认最小选型 | [基线核对](engineering-baseline.md)完成；技术 SSOT、决策索引、OPEN、技术方案及平台契约已同步，保留待决与发布边界 |
-| P0-02 / BLOCKED | 版本控制与实际 CI；P0-01 已完成，待用户提供远程位置/访问方式 | 本地 Git/main 已初始化，未提交/推送；Node 本地/CI 对齐，锁文件安装入口已具备；远程协作、PR 门禁及实际 CI 成功证据待远程条件齐备 |
+| P0-02 / DONE | 版本控制与实际 CI；用户已指定 GitHub 仓库 | 基线已推送，实际 CI 运行 36445834084 成功；main 要求 PR、最新分支与 preflight，通过 API 回读确认保护生效；不包含原生构建 |
 | P0-03 / PARTIAL | 本地与测试环境可复现；依赖 P0-01 | Podman 实际启动 PostgreSQL，服务连接、就绪与存活分离；环境样例不含秘密；空库迁移执行机制、停止/重启数据保留与故障测试；私有文件基础能力在 P2-02 接入、检查证据在 P3-02 扩展 |
 | P0-04 / PARTIAL | 机器契约门禁；依赖 P0-01 | 现有判定 JSON、身份案例和 OpenAPI 全部有实际校验入口；引入完整规范校验及响应验证、引用/未知字段/错误案例负测；损坏契约使门禁失败，不能仅检查文件存在 |
 | P0-05 / PARTIAL | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
@@ -145,3 +145,13 @@
 - 阻塞：尚无用户指定远程，未创建远程、暂存、提交、推送或启用实际 PR 保护；CI 文件存在不能作为运行成功证据。任务保持 BLOCKED。
 - 后续：用户提供仓库 URL、平台和访问方式后，检查待提交内容及本机秘密，再按授权建立远程协作，获取实际 CI 与保护规则证据。不根据机器登录信息猜测仓库归属或可见性。
 - 验证：本轮完整 `scripts/test/preflight.ps1` 退出码 0，文档/策略案例、Go test/vet、Web 构建/SSR 测试、Flutter analyze/widget test 均通过；`git remote -v` 为空，`git status --short` 显示文件未暂存；`git check-ignore` 确认环境文件、本机 .gstack、Android local.properties、node_modules 和 .dart_tool 被忽略。此结果不是干净检出验证、秘密扫描或实际远程 CI 证据。
+
+### 远程验收补记
+
+2026-09-28：用户指定 `jihongxing/EmergencyManagementSystem` 后，确认它为空的公开仓库，使用本机已有认证建立 origin。初次基线提交 `febf121` 推送成功；对入库文件做凭据模式与忽略规则检查，未发现命中的凭据，但不宣称完成全面秘密审计。最初的无远程阻塞已解除，上文保留历史过程。
+
+- GitHub Actions 运行 ID `36445834084`，提交 `febf12163387e4a881f4f2ef2fcfbd7412cd97b4`，`preflight` 成功，包含干净检出、npm ci、Flutter 锁文件解析和统一预检。
+- main 保护已配置并回读确认：要求 PR、preflight 成功、分支最新、讨论已解决；管理员同样受约束，禁止强推和删除。单人维护暂不强制其他人审批，审批数为 0；这不等于独立人工审查。配置记录见 [.github/main-protection.json](../.github/main-protection.json)。
+- 基线创建后切到 `chore/p0-02-remote-governance`，治理文档通过 PR 推进，不绕过主分支保护。
+- CI 成功但提示 checkout@v4、setup-go@v5、setup-node@v4 的 Node 20 action 运行时已被 runner 转为 Node 24；列为后续兼容性维护，不与应用 Node 22.23.2 混淆。
+- P0-02 已达到任务验收；Android/iOS 实际构建仍属 P0-05，整个 P0 尚未验收。
