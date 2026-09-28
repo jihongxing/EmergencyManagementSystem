@@ -1,4 +1,5 @@
 param()
+#requires -Version 7.0
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 function Invoke-Checked([string]$tool, [string[]]$arguments) {

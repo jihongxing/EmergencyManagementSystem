@@ -1,5 +1,12 @@
 # 项目文档入口
 
+## 强制 Shell 约束
+
+- 所有终端命令、脚本入口、子进程及 CI Shell 统一使用 PowerShell 7 的 `pwsh`（或 `pwsh.exe`）。
+- 禁止调用 Windows PowerShell 的 `powershell` 或 `powershell.exe`，也不得通过其他脚本或 Shell 间接调用。
+- `.ps1` 文件继续使用，但必须由 `pwsh` 执行。发现历史命令示例或可执行入口使用旧命令时，应同步修正；历史验证记录不追溯改写。
+- 环境缺少 `pwsh` 时停止并报告，不回退旧版 PowerShell。此约束不禁止在 `pwsh` 中调用 Git、Go、Flutter、npm、Podman 等项目工具。
+
 开发或讨论需求前先阅读 [docs/README.md](docs/README.md) 和相关专题 SSOT。`docs/ssot/` 是已批准产品决定的唯一现行来源；`docs/archive/` 是历史快照，不作为新的决策依据。
 
 - 未经用户明确批准，不得把建议、研究结论或外部实施资料改写成 `FROZEN`。

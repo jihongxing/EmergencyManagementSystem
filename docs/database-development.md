@@ -22,7 +22,7 @@ Podman 项目名 `ems-dev`，默认端口 55472，可通过 POSTGRES_PORT 调整
 ## 验证与数据保留
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1 -Database
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1 -Database
 ```
 
 此命令需要 Podman 及 POSTGRES_PASSWORD，会创建随机名 `ems_test_*` 的专用空库，验证迁移、就绪 HTTP、失败事务回滚及重复执行，再停止/启动本项目 PostgreSQL 检查持久性；因此会短暂中断本项目开发连接，请勿在其他人正在使用本开发库时运行。不删除库或卷，重复运行会保留多个测试库。

@@ -1,5 +1,7 @@
 # 文档地图
 
+工程快照：[checkpoint-001](checkpoints/checkpoint-001.md)，恢复引用为同名 Git 标签；不包含数据库或秘密。
+
 P0-03 操作入口：[数据库开发环境](database-development.md)，包含连接配置、独立迁移、就绪与实际集成验证。
 
 工程入口：[项目 README](../README.md)、[工程治理](engineering.md)、[路线图](../ROADMAP.md)。已建立最小工程骨架，完整验证进度以路线图为准。

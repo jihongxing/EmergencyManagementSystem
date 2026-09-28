@@ -2,6 +2,9 @@ name: Engineering checks
 on: [push, pull_request]
 permissions:
   contents: read
+defaults:
+  run:
+    shell: pwsh
 jobs:
   preflight:
     runs-on: windows-latest
@@ -25,4 +28,4 @@ jobs:
         working-directory: apps/mobile
         run: flutter pub get --enforce-lockfile
       - name: Preflight
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1
