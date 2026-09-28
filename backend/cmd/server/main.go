@@ -10,17 +10,23 @@ import (
 	"syscall"
 	"time"
 
+	"emergency-management/backend/internal/database"
 	"emergency-management/backend/internal/platform"
 )
 
 func main() {
+	db, err := database.Open(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	addr := os.Getenv("HTTP_ADDR")
 	if addr == "" {
 		addr = "127.0.0.1:8080"
 	}
 	server := &http.Server{
 		Addr:              addr,
-		Handler:           platform.NewHandler(),
+		Handler:           platform.NewHandler(database.Ready(db)),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

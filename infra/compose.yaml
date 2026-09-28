@@ -1,12 +1,13 @@
+name: ems-dev
 services:
   postgres:
-    image: docker.io/library/postgres:17
+    image: docker.io/library/postgres@sha256:dbbeb22a65db2503050cdbbe5e78f017478f10a1002a226463f049dbb017e99b
     environment:
       POSTGRES_DB: emergency_dev
       POSTGRES_USER: emergency_dev
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local environment}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-55472}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
