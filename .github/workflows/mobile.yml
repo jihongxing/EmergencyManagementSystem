@@ -26,17 +26,23 @@ jobs:
         run: |
           sudo chmod 666 /dev/kvm
           if ($LASTEXITCODE -ne 0) { throw 'KVM unavailable' }
+          sudo apt-get update
+          if ($LASTEXITCODE -ne 0) { throw 'Package index unavailable' }
+          sudo apt-get install -y libpulse0 libnss3 libxkbcommon0 libxcb-cursor0
+          if ($LASTEXITCODE -ne 0) { throw 'Emulator runtime dependencies unavailable' }
       - name: Start emulator and verify native shell
+        timeout-minutes: 15
         run: |
           $sdk = $env:ANDROID_HOME
           & "$sdk/cmdline-tools/latest/bin/sdkmanager" 'system-images;android-35;google_apis;x86_64'
           if ($LASTEXITCODE -ne 0) { throw 'System image installation failed' }
           'no' | & "$sdk/cmdline-tools/latest/bin/avdmanager" create avd -n ems-p0 -k 'system-images;android-35;google_apis;x86_64' --force
           if ($LASTEXITCODE -ne 0) { throw 'AVD creation failed' }
-          $emulator = Start-Process "$sdk/emulator/emulator" -ArgumentList '-avd','ems-p0','-no-window','-no-audio','-no-boot-anim','-no-snapshot','-gpu','swiftshader_indirect' -PassThru -RedirectStandardOutput emulator.log -RedirectStandardError emulator-error.log
+          $emulator = Start-Process "$sdk/emulator/emulator" -ArgumentList '-avd','ems-p0','-port','5554','-no-window','-no-audio','-no-boot-anim','-no-snapshot','-gpu','swiftshader','-memory','2048','-cores','2' -PassThru -RedirectStandardOutput emulator.log -RedirectStandardError emulator-error.log
           try {
             $ready = $false
             for ($i = 0; $i -lt 120; $i++) {
+              if ($emulator.HasExited) { throw "Emulator exited: $($emulator.ExitCode)" }
               $boot = & "$sdk/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>$null
               if (($boot -join '').Trim() -eq '1') { $ready = $true; break }
               Start-Sleep -Seconds 5
@@ -45,6 +51,8 @@ jobs:
             flutter test integration_test/startup_test.dart -d emulator-5554 --no-pub
             if ($LASTEXITCODE -ne 0) { throw 'Android startup failed' }
           } finally {
+            Get-Content emulator.log -Tail 80 -ErrorAction Continue
+            Get-Content emulator-error.log -Tail 80 -ErrorAction Continue
             if (-not $emulator.HasExited) { Stop-Process -Id $emulator.Id }
           }
       - uses: actions/upload-artifact@v4
@@ -69,6 +77,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Dependency resolution failed' }
       - run: flutter build ios --debug --no-codesign --no-pub
       - name: Start iOS simulator and verify native shell
+        timeout-minutes: 15
         run: |
           $devices = (xcrun simctl list devices available --json | ConvertFrom-Json).devices
           if ($LASTEXITCODE -ne 0) { throw 'Simulator discovery failed' }
