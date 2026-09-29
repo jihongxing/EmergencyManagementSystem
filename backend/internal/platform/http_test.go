@@ -39,7 +39,8 @@ func TestLiveContract(t *testing.T) {
 	if err := json.Unmarshal(resp.Body.Bytes(), &actual); err != nil {
 		t.Fatal(err)
 	}
-	if actual["status"] != expected || len(actual) != 1 {
+	if actual["status"] != expected || len(actual) != 1 || resp.Code != http.StatusOK ||
+		resp.Header().Get("Content-Type") != "application/json; charset=utf-8" {
 		t.Fatalf("contract mismatch: %#v", actual)
 	}
 }

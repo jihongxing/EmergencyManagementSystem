@@ -17,11 +17,11 @@
 | P0-01 / DONE | 方案与工程基线对齐；用户已确认最小选型 | [基线核对](engineering-baseline.md)完成；技术 SSOT、决策索引、OPEN、技术方案及平台契约已同步，保留待决与发布边界 |
 | P0-02 / DONE | 版本控制与实际 CI；用户已指定 GitHub 仓库 | 基线已推送，实际 CI 运行 36445834084 成功；main 要求 PR、最新分支与 preflight，通过 API 回读确认保护生效；不包含原生构建 |
 | P0-03 / DONE | 本地与测试环境可复现；依赖 P0-01 | 已提供[运行说明](database-development.md)、连接/就绪契约与独立迁移，实际 PostgreSQL 集成及重启保留验证通过；无业务表，远程 CI 数据库集成尚未接入 |
-| P0-04 / PARTIAL | 机器契约门禁；依赖 P0-01 | 现有判定 JSON、身份案例和 OpenAPI 全部有实际校验入口；引入完整规范校验及响应验证、引用/未知字段/错误案例负测；损坏契约使门禁失败，不能仅检查文件存在 |
-| P0-05 / PARTIAL | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
+| P0-04 / DONE | 机器契约门禁；依赖 P0-01 | 判定 JSON、身份案例按 JSON Schema 及语义校验；OpenAPI 3.1 规范/引用与 Go 实际探针响应按 Schema 校验；损坏、未知字段、错误案例、断引用等负测会使门禁失败 |
+| P0-05 / DONE | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
 | P0-06 / TODO | 基线验收；依赖 P0-02 至 P0-05 | 从干净检出按 README 安装并预检，记录工具版本、命令、CI 与双端证据；更新路线图，请用户验收 |
 
-已有证据：本地 preflight 已通过，Web 构建/SSR 测试、Go test/vet、Flutter analyze/widget 测试、原生目录及锁文件存在；Podman 仅验证配置，远程 CI/原生构建尚无证据。以上仅支撑 PARTIAL，不误记 P0 已验收。
+已有证据：本地 preflight 已通过，Web 构建/SSR 测试、Go test/vet、Flutter analyze/widget 测试、原生目录及锁文件存在；P0-02 至 P0-05 的远程 CI 证据已齐备。P0-06 仍需从干净检出复核安装、工具版本、命令和全部证据后进行阶段验收。
 
 ## P1 身份与最小组织
 
@@ -166,3 +166,19 @@
 - 实际验证：`preflight.ps1 -Database` 通过文档、Go test/vet、真实 PostgreSQL 集成、Web 构建/测试、Flutter analyze/test；空库 503、迁移后 200、重复迁移、失败事务回滚、不可达库和存活分离、停止/重启版本保留均覆盖。
 - 环境影响：仅创建并重启本项目 `ems-dev-postgres-1`；保留测试库和命名卷，未删除其他项目数据。密码为本机临时随机值，不打印/提交，接管方法见运行说明。
 - 限制：Windows 远程 CI 普通预检显式跳过数据库集成；未验证生产权限拆分、备份恢复、并发部署迁移或原生移动构建。下一任务 P0-04，不进入身份业务。
+
+## P0-04 执行记录
+
+- 日期/负责人：2026-09-29，Codex；依赖 P0-01 已完成。依据：平台 C05、[行为与权限契约](../constras/README.md)、[身份案例](../constras/identity/authorization.json)及[探针 OpenAPI](../constras/platform/live.openapi.json)。
+- 范围：增加[严格机器契约检查](../scripts/test/check-machine-contracts.ps1)、[行为与身份 JSON Schema](../scripts/contracts/behavior.schema.json)、[OpenAPI/响应校验](../scripts/contracts/validate.test.mjs)及锁定的 npm 依赖；统一预检和 CI 安装并实际执行；Go `httptest` 输出存活 200、就绪 200/503 的响应供 OpenAPI Schema 校验。
+- 验收：机器门禁校验必填字段、未知字段、来源条款与案例准入预期；隔离负测覆盖损坏 JSON、缺文件、断引用、错误 operationId/状态码、错误预期和响应体/内容类型不一致。`pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1` 通过文档、契约、Go test/vet、Web build/test、Flutter analyze/test；实际数据库集成因本次会话未设置 `POSTGRES_PASSWORD` 未重跑，沿用 P0-03 原有独立验证记录，不宣称本次数据库集成通过。
+- 数据/回退：无数据库迁移或业务数据变更；回退为撤销本任务的校验脚本、测试与 CI 依赖更改。P0-05 原生双端构建尚未完成；P0-06 阶段验收未开始。
+
+## P0-05 执行记录
+
+- 日期/负责人：2026-09-29，Codex。依据 C05-01 和[移动工程验证契约](../constras/platform/mobile-validation.md)；P0-01 已完成。不新增业务功能、正式标识或发布签名。
+- [原生工作流](../.github/workflows/mobile.yml)分别运行 Android debug 构建与模拟器启动、macOS iOS 无签名构建与 iPhone 模拟器启动；[启动测试](../apps/mobile/integration_test/startup_test.dart)只验证未认证壳。工作流存在不等于验收通过。
+- 本机 Windows 配备 Flutter 3.44.0、Android SDK 36；无本地 macOS。Android 首次构建曾补下载引擎组件，本进程使用本机现有代理，不更改全局代理。
+- 远程 push CI `36546950109`（提交 `3d963bb`）和对应 PR CI `36546955477` 均成功：Android debug APK 构建并在 Linux 原生模拟器运行 `integration_test/startup_test.dart`，断言未认证应用壳启动；macOS-15 使用 Xcode 16.4 完成 iOS `--debug --no-codesign` 设备构建，并完成 iPhone 模拟器构建、安装、启动、进程存活检查及启动截图。
+- iOS 启动截图已人工核验：显示“应急安全检查”和身份认证未接入提示，不显示企业或行政工作区。证据工作流：[mobile.yml](../.github/workflows/mobile.yml)；原生验证契约：[mobile-validation.md](../constras/platform/mobile-validation.md)。
+- 结果：P0-05 验收通过；下一步仅为 P0-06 基线验收，未进入 P1 身份业务。

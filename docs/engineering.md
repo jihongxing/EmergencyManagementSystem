@@ -18,9 +18,9 @@
 
 ## 验证与交付
 
-[统一预检](../scripts/test/preflight.ps1)执行文档检查、探针契约基本解析、Go 检查、Web 构建测试、Flutter 检查及原生目录存在性。`-DocsOnly` 明确是部分验证；预检不替代 Android/iOS 实际构建、签名或生产验收。原生 iOS 在 macOS 上验收。
+[统一预检](../scripts/test/preflight.ps1)执行文档检查、机器契约与 OpenAPI 规范/引用校验、探针实际响应验证、Go 检查、Web 构建测试、Flutter 检查及原生目录存在性。契约校验依赖 `scripts/contracts` 的锁文件和 `npm ci`；`-DocsOnly` 明确是部分验证；预检不替代 Android/iOS 实际构建、签名或生产验收。原生 iOS 在 macOS 上验收。
 
-现有 Markdown/JSON 由文档脚本检查；首个工程接口见 [OpenAPI](../constras/platform/live.openapi.json)。当前只做基本结构解析，后续接口开发须补完整规范校验及真实请求/响应测试，不将基本解析冒充完整 OpenAPI 验证。
+现有 Markdown/JSON 由文档脚本和[机器契约门禁](../scripts/test/check-machine-contracts.ps1)检查；首个工程接口见 [OpenAPI](../constras/platform/live.openapi.json)。现有存活/就绪 OpenAPI 已做规范、引用和实际响应校验；后续新增业务接口仍须逐一增加真实请求/响应及权限测试，不以探针覆盖代替业务契约验收。
 
 本机容器使用 Podman；PostgreSQL 开发配置见 [compose](../infra/compose.yaml)。启动前设置本地密码，禁止无意删除命名数据卷。正式部署、文件服务和备份方案仍待实施选型。
 
