@@ -22,6 +22,8 @@
 
 ## 使用约定
 
+P0-05 原生构建与启动的验收边界见[移动工程验证](platform/mobile-validation.md)；开发构建和模拟器启动不代表正式分发或业务授权就绪。
+
 P0-03 数据库连接与迁移见[基础契约](platform/database.md)和[就绪 OpenAPI](platform/ready.openapi.json)，Go HTTP 测试实际解析状态响应，专用数据库集成测试验证迁移及就绪。
 
 身份模块首个内部授权单元见 [identity](identity/README.md)：机器案例直接由 Go 测试解析执行；不提供登录、账号开通或行政资格认定。
