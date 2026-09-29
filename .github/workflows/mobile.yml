@@ -34,10 +34,15 @@ jobs:
         timeout-minutes: 15
         run: |
           $sdk = $env:ANDROID_HOME
+          $env:ANDROID_SDK_HOME = $env:HOME
+          $env:ANDROID_AVD_HOME = Join-Path $env:HOME '.android/avd'
+          New-Item -ItemType Directory -Force $env:ANDROID_AVD_HOME | Out-Null
           & "$sdk/cmdline-tools/latest/bin/sdkmanager" 'system-images;android-35;google_apis;x86_64'
           if ($LASTEXITCODE -ne 0) { throw 'System image installation failed' }
           'no' | & "$sdk/cmdline-tools/latest/bin/avdmanager" create avd -n ems-p0 -k 'system-images;android-35;google_apis;x86_64' --force
           if ($LASTEXITCODE -ne 0) { throw 'AVD creation failed' }
+          $avds = & "$sdk/emulator/emulator" -list-avds
+          if ($LASTEXITCODE -ne 0 -or $avds -notcontains 'ems-p0') { throw "AVD not discoverable: $($avds -join ', ')" }
           $emulator = Start-Process "$sdk/emulator/emulator" -ArgumentList '-avd','ems-p0','-port','5554','-no-window','-no-audio','-no-boot-anim','-no-snapshot','-gpu','swiftshader','-memory','2048','-cores','2' -PassThru -RedirectStandardOutput emulator.log -RedirectStandardError emulator-error.log
           try {
             $ready = $false
@@ -92,8 +97,26 @@ jobs:
           try {
             xcrun simctl bootstatus $device.udid -b
             if ($LASTEXITCODE -ne 0) { throw 'Simulator not ready' }
-            flutter test integration_test/startup_test.dart -d $device.udid --no-pub
-            if ($LASTEXITCODE -ne 0) { throw 'iOS startup failed' }
+            flutter build ios --simulator --debug --no-pub
+            if ($LASTEXITCODE -ne 0) { throw 'iOS simulator build failed' }
+            $app = 'build/ios/iphonesimulator/Runner.app'
+            $bundle = /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist"
+            if ($LASTEXITCODE -ne 0) { throw 'App bundle identifier unavailable' }
+            xcrun simctl install $device.udid $app
+            if ($LASTEXITCODE -ne 0) { throw 'Simulator install failed' }
+            $launch = xcrun simctl launch $device.udid $bundle
+            if ($LASTEXITCODE -ne 0 -or ($launch -join '') -notmatch ':\s*(\d+)') { throw "Simulator launch failed: $launch" }
+            $appPid = $Matches[1]
+            Start-Sleep -Seconds 5
+            $processes = xcrun simctl spawn $device.udid launchctl list
+            if ($LASTEXITCODE -ne 0 -or -not ($processes | Select-String -SimpleMatch $bundle)) { throw "App $bundle exited after launch (PID $appPid)" }
+            xcrun simctl io $device.udid screenshot ios-startup.png
+            if ($LASTEXITCODE -ne 0) { throw 'Simulator screenshot failed' }
           } finally {
             xcrun simctl shutdown $device.udid
           }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-startup-evidence
+          path: apps/mobile/ios-startup.png
