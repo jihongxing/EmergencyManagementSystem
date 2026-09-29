@@ -18,7 +18,7 @@
 
 `enterprise-executor-record-access` 和 `free-site-workflow` 仅描述已分配场所的单位执行人员；单位管理员的本组织权限仍以 [权限契约](02-access-and-evidence.md) 为准。`official-inspection-create` 中的现场扫码事实须是有效二维码与现场对象匹配后的核验结果，不能由客户端自报。
 
-运行 [治理校验](../scripts/test/check-doc-governance.ps1) 会解析每份 JSON，检查来源条款覆盖、规则结构，并执行正反案例。新增模块时须将这些条件落实为服务端行为、数据校验和实际自动化测试；这里的策略案例不能替代真实 API、数据库或客户端测试。具体接口和存储契约随模块开发补齐。
+运行 [治理校验](../scripts/test/check-doc-governance.ps1) 会解析每份 JSON，检查来源条款覆盖、规则结构，并执行正反案例。[机器契约门禁](../scripts/test/check-machine-contracts.ps1) 与 [规范/响应校验](../scripts/contracts/validate.test.mjs) 由统一预检调用：前者检查条款引用、字段及损坏契约负测，后者按 JSON Schema 校验行为与身份文件、验证 OpenAPI 3.1 和引用，并用 OpenAPI 响应 Schema 验证 Go handler 实际产生的存活/就绪响应。新增模块时须将这些条件落实为服务端行为、数据校验和实际自动化测试；这里的策略案例不能替代真实业务 API、数据库或客户端测试。具体接口和存储契约随模块开发补齐。
 
 ## 使用约定
 
@@ -26,7 +26,7 @@ P0-03 数据库连接与迁移见[基础契约](platform/database.md)和[就绪 
 
 身份模块首个内部授权单元见 [identity](identity/README.md)：机器案例直接由 Go 测试解析执行；不提供登录、账号开通或行政资格认定。
 
-工程存活接口见 [live.openapi.json](platform/live.openapi.json)，派生于平台契约的 Go 单体运行形态，仅表示进程存活，不代表业务或行政依据就绪。由统一预检进行基本结构解析，由 Go HTTP 测试检查响应。
+工程存活接口见 [live.openapi.json](platform/live.openapi.json)，派生于平台契约的 Go 单体运行形态，仅表示进程存活，不代表业务或行政依据就绪。统一预检执行 OpenAPI 规范及实际 HTTP 响应校验；这些探针测试不代表业务接口已实现。
 
 - 各条以 `Cxx` 编号，便于实现与测试逐条追溯；验收场景是行为断言，不指定 API 路径、表名或 UI 控件。`必须` 表示现行 SSOT 约束；`不得` 表示禁止行为。
 - 实际县、部门、区划、职责、事项、共享范围及临时检查依据属于[实施输入](../docs/implementation/README.md)。未取得并核验时，契约要求待确认或阻断正式行政操作；不能用测试数据冒充正式依据。

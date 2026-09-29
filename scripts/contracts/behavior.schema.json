@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "source", "manualClauses", "policies"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "source": {"type": "string", "pattern": "^0[1-5]-[a-z-]+\\.md$"},
+    "manualClauses": {"$ref": "#/$defs/clauses"},
+    "policies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/policy"}
+    }
+  },
+  "$defs": {
+    "clauses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^C0[1-5]-[0-9]{2}$"}
+    },
+    "policy": {
+      "type": "object",
+      "required": ["id", "clauses", "facts", "allowWhen", "cases"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]+$"},
+        "clauses": {"type": "array", "$ref": "#/$defs/clauses", "minItems": 1},
+        "facts": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$"}
+        },
+        "allowWhen": {"$ref": "#/$defs/facts"},
+        "cases": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["name", "input", "allowed"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "input": {"$ref": "#/$defs/facts"},
+              "allowed": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "facts": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {"^[a-z][a-zA-Z0-9]*$": {"type": "boolean"}},
+      "additionalProperties": false
+    }
+  }
+}

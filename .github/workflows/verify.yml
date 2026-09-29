@@ -24,6 +24,9 @@ jobs:
       - name: Install web dependencies
         working-directory: apps/admin-web
         run: npm ci
+      - name: Install contract validation dependencies
+        working-directory: scripts/contracts
+        run: npm ci
       - name: Resolve Flutter dependencies
         working-directory: apps/mobile
         run: flutter pub get --enforce-lockfile

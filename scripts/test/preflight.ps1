@@ -10,14 +10,12 @@ function Run([string]$directory, [string]$tool, [string[]]$arguments) {
     } finally { Pop-Location }
 }
 Run '.' 'pwsh' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-doc-governance.ps1')
-$contract = Get-Content (Join-Path $root 'constras/platform/live.openapi.json') -Raw | ConvertFrom-Json
-if ($contract.openapi -ne '3.1.0' -or $contract.paths.'/health/live'.get.operationId -ne 'getLiveness') {
-    throw 'Liveness contract is missing or inconsistent'
-}
+Run '.' 'pwsh' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/test/check-machine-contracts.ps1')
 if ($DocsOnly) {
-    Write-Output 'PARTIAL: document checks only; project checks skipped.'
+    Write-Output 'PARTIAL: document and machine structure checks only; OpenAPI specification, real responses and project checks skipped.'
     exit 0
 }
+Run 'scripts/contracts' 'npm.cmd' @('run', 'check')
 Run 'backend' 'go' @('test', './...')
 Run 'backend' 'go' @('vet', './...')
 if ($Database) {
