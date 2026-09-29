@@ -19,9 +19,9 @@
 | P0-03 / DONE | 本地与测试环境可复现；依赖 P0-01 | 已提供[运行说明](database-development.md)、连接/就绪契约与独立迁移，实际 PostgreSQL 集成及重启保留验证通过；无业务表，远程 CI 数据库集成尚未接入 |
 | P0-04 / DONE | 机器契约门禁；依赖 P0-01 | 判定 JSON、身份案例按 JSON Schema 及语义校验；OpenAPI 3.1 规范/引用与 Go 实际探针响应按 Schema 校验；损坏、未知字段、错误案例、断引用等负测会使门禁失败 |
 | P0-05 / DONE | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
-| P0-06 / TODO | 基线验收；依赖 P0-02 至 P0-05 | 从干净检出按 README 安装并预检，记录工具版本、命令、CI 与双端证据；更新路线图，请用户验收 |
+| P0-06 / DONE | 基线验收；依赖 P0-02 至 P0-05 | 从干净检出按 README 安装并预检，记录工具版本、命令、CI 与双端证据；更新路线图，请用户验收 |
 
-已有证据：本地 preflight 已通过，Web 构建/SSR 测试、Go test/vet、Flutter analyze/widget 测试、原生目录及锁文件存在；P0-02 至 P0-05 的远程 CI 证据已齐备。P0-06 仍需从干净检出复核安装、工具版本、命令和全部证据后进行阶段验收。
+已有证据：本地和干净检出 preflight 均已通过，Web 构建/SSR 测试、Go test/vet、Flutter analyze/widget 测试、原生目录及锁文件存在；P0-02 至 P0-05 的远程 CI、数据库独立验证和双端原生证据已齐备。P0-06 已完成工程验收，P0 阶段仍等待用户确认后才进入 P1。
 
 ## P1 身份与最小组织
 
@@ -182,3 +182,14 @@
 - 远程 push CI `36546950109`（提交 `3d963bb`）和对应 PR CI `36546955477` 均成功：Android debug APK 构建并在 Linux 原生模拟器运行 `integration_test/startup_test.dart`，断言未认证应用壳启动；macOS-15 使用 Xcode 16.4 完成 iOS `--debug --no-codesign` 设备构建，并完成 iPhone 模拟器构建、安装、启动、进程存活检查及启动截图。
 - iOS 启动截图已人工核验：显示“应急安全检查”和身份认证未接入提示，不显示企业或行政工作区。证据工作流：[mobile.yml](../.github/workflows/mobile.yml)；原生验证契约：[mobile-validation.md](../constras/platform/mobile-validation.md)。
 - 结果：P0-05 验收通过；下一步仅为 P0-06 基线验收，未进入 P1 身份业务。
+
+## P0-06 执行记录
+
+- 完成验证日期：2026-09-29（本机 Asia/Shanghai，任务跨日执行）。
+- 前置：PR #5 已合并，合并提交为 `c73212c5bb0cc4fbb47ab281840060871268871e`；本任务分支 `codex/p0-06-baseline-acceptance` 基于该提交建立。干净验收检出位于 `D:/codeSpace/EmergencyManagementSystem-p0-06-clean`，检出提交为 `c73212c`，工作区无未提交文件。
+- 复现安装：按 README 和锁文件执行 `scripts/contracts/npm ci`、`apps/admin-web/npm ci`、`apps/mobile/flutter pub get --enforce-lockfile`，三项均成功；未提交 `node_modules`、`.dart_tool` 或构建产物。`apps/admin-web` 的 npm 安装报告 2 个 moderate audit advisories，未阻断本次工程基线验收，列为依赖维护项。
+- 工具版本：Git `2.51.2.windows.1`；Go `1.25.5 windows/amd64`；Node `22.23.2`；npm `10.9.8`；Flutter `3.44.0`；Dart `3.12.0`；Podman `5.7.1`。版本与 `.nvmrc`、Flutter SDK 约束及现有 CI 记录一致。
+- 本轮验收命令：在干净检出执行 `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1`，退出码 0。机器契约门禁通过；契约 npm 测试 2/2 通过；Go test/vet 通过；Web build 和 1 个 Vitest 测试通过；Flutter analyze 无问题、widget test 1/1 通过；脚本按设计提示未执行真实 PostgreSQL 集成。
+- 数据库证据边界：本轮干净验收未设置 `POSTGRES_PASSWORD`，因此没有执行 `preflight.ps1 -Database`。P0-03 已完成并记录独立 PostgreSQL 连接、迁移、就绪、失败回滚及停止/重启保留验证；本记录引用该既有证据，不将其表述为本轮干净验收结果。
+- 远程和双端证据：沿用 P0-02 的 GitHub Actions `36445834084`、P0-05 的 push CI `36546950109` 和 PR CI `36546955477`；P0-05 已验证 Android debug 构建与启动测试、macOS iOS 无签名构建、iPhone 模拟器安装启动和进程存活。PR #5 合并前检查全部通过。
+- 验收结论：P0-01 至 P0-06 的工程基线证据齐备，P0-06 标记为 `DONE`。这只表示工程基线验收完成，不表示身份、业务、生产部署或正式发布已完成；下一步为用户确认 P0 阶段后再开始 P1-01。
