@@ -1,0 +1,90 @@
+name: Native mobile validation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: pwsh
+    working-directory: apps/mobile
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build apk --debug --no-pub
+      - name: Enable emulator acceleration
+        run: |
+          sudo chmod 666 /dev/kvm
+          if ($LASTEXITCODE -ne 0) { throw 'KVM unavailable' }
+      - name: Start emulator and verify native shell
+        run: |
+          $sdk = $env:ANDROID_HOME
+          & "$sdk/cmdline-tools/latest/bin/sdkmanager" 'system-images;android-35;google_apis;x86_64'
+          if ($LASTEXITCODE -ne 0) { throw 'System image installation failed' }
+          'no' | & "$sdk/cmdline-tools/latest/bin/avdmanager" create avd -n ems-p0 -k 'system-images;android-35;google_apis;x86_64' --force
+          if ($LASTEXITCODE -ne 0) { throw 'AVD creation failed' }
+          $emulator = Start-Process "$sdk/emulator/emulator" -ArgumentList '-avd','ems-p0','-no-window','-no-audio','-no-boot-anim','-no-snapshot','-gpu','swiftshader_indirect' -PassThru -RedirectStandardOutput emulator.log -RedirectStandardError emulator-error.log
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 120; $i++) {
+              $boot = & "$sdk/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>$null
+              if (($boot -join '').Trim() -eq '1') { $ready = $true; break }
+              Start-Sleep -Seconds 5
+            }
+            if (-not $ready) { throw 'Emulator boot timed out' }
+            flutter test integration_test/startup_test.dart -d emulator-5554 --no-pub
+            if ($LASTEXITCODE -ne 0) { throw 'Android startup failed' }
+          } finally {
+            if (-not $emulator.HasExited) { Stop-Process -Id $emulator.Id }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-development-evidence
+          path: |
+            apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+            apps/mobile/emulator*.log
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: stable
+      - run: |
+          xcodebuild -version
+          flutter pub get --enforce-lockfile
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency resolution failed' }
+      - run: flutter build ios --debug --no-codesign --no-pub
+      - name: Start iOS simulator and verify native shell
+        run: |
+          $devices = (xcrun simctl list devices available --json | ConvertFrom-Json).devices
+          if ($LASTEXITCODE -ne 0) { throw 'Simulator discovery failed' }
+          $device = $devices.PSObject.Properties |
+            Where-Object Name -Match 'iOS' |
+            ForEach-Object { $_.Value } |
+            Where-Object name -Like 'iPhone*' |
+            Select-Object -First 1
+          if (-not $device) { throw 'No available iPhone simulator' }
+          xcrun simctl boot $device.udid
+          if ($LASTEXITCODE -ne 0) { throw 'Simulator boot failed' }
+          try {
+            xcrun simctl bootstatus $device.udid -b
+            if ($LASTEXITCODE -ne 0) { throw 'Simulator not ready' }
+            flutter test integration_test/startup_test.dart -d $device.udid --no-pub
+            if ($LASTEXITCODE -ne 0) { throw 'iOS startup failed' }
+          } finally {
+            xcrun simctl shutdown $device.udid
+          }
