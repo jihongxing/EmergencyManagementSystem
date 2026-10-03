@@ -53,7 +53,7 @@ test('behavior and identity JSON Schemas reject unknown and missing fields', asy
   try {
     for (const file of ['01-scope-and-identity.json', '02-access-and-evidence.json',
       '03-rules-and-records.json', '04-subscription.json', '05-platform.json',
-      'identity/authorization.json', 'identity/lifecycle.json', 'identity/bootstrap.json', 'identity/session.json',
+      'identity/authorization.json', 'identity/lifecycle.json', 'identity/bootstrap.json', 'identity/session.json', 'identity/members.json',
       'identity/data.schema.json', 'identity/identity.openapi.json']) {
       await mkdir(resolve(fixture, file, '..'), { recursive: true });
       await writeFile(resolve(fixture, file), await readFile(resolve(root, '..', file)));

@@ -2,7 +2,7 @@
 
 状态：`DERIVED CONTRACT`。依据：[权限 SSOT](../../docs/ssot/04-access.md) 与 [C02-01 至 C02-04](../02-access-and-evidence.md)。
 
-本单元已扩展为 P1-01/P1-02/P1-03 身份/组织模块契约集合：`module.md` 定义边界，`data.schema.json` 定义组织、成员、会话和密码恢复数据形状，`lifecycle.json` 定义生命周期正反案例，`bootstrap.md` 与 `bootstrap.json` 定义组织及首位管理员受控开通，`session.md` 定义会话与逐次身份校验，`identity.openapi.json` 定义最小接口面。它们仍然不表示实施人员认证、完整成员管理或移动端工作区已经实现。
+本单元已扩展为 P1-01/P1-02/P1-03/P1-04 身份/组织模块契约集合：`module.md` 定义边界，`data.schema.json` 定义组织、成员、会话和密码恢复数据形状，`lifecycle.json` 定义生命周期正反案例，`bootstrap.md` 与 `bootstrap.json` 定义组织及首位管理员受控开通，`session.md` 定义会话与逐次身份校验，`members.md` 与 `members.json` 定义本方成员管理和审计，`identity.openapi.json` 定义最小接口面。它们仍然不表示实施人员认证或移动端工作区已经实现。
 
 现有 `authorization.json` 仍仅描述服务端内部的当前成员校验和“管理本方普通成员”的准入判定，不实现登录、数据库、邀请接口、首位管理员开通/更换或行政资格核验。账号当前状态必须由未来的服务端数据层读取，不接受客户端角色声明作为事实。
 

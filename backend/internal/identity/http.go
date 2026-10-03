@@ -14,11 +14,12 @@ const (
 )
 
 type HTTPHandler struct {
-	service *AuthService
+	service       *AuthService
+	memberService *MemberService
 }
 
-func NewHTTPHandler(service *AuthService) http.Handler {
-	h := &HTTPHandler{service: service}
+func NewHTTPHandler(service *AuthService, memberService *MemberService) http.Handler {
+	h := &HTTPHandler{service: service, memberService: memberService}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/auth/login", h.login)
 	mux.HandleFunc("POST /v1/auth/logout", h.logout)
@@ -26,6 +27,9 @@ func NewHTTPHandler(service *AuthService) http.Handler {
 	mux.HandleFunc("POST /v1/auth/password-reset/request", h.resetRequest)
 	mux.HandleFunc("POST /v1/auth/password-reset/confirm", h.resetConfirm)
 	mux.HandleFunc("GET /v1/me", h.me)
+	mux.HandleFunc("GET /v1/organizations/{organizationId}/members", h.listMembers)
+	mux.HandleFunc("POST /v1/organizations/{organizationId}/members", h.createMember)
+	mux.HandleFunc("PATCH /v1/organizations/{organizationId}/members/{memberId}", h.updateMember)
 	return mux
 }
 
@@ -49,10 +53,20 @@ type resetConfirmPayload struct {
 	NewPassword string `json:"newPassword"`
 }
 
+type memberCreatePayload struct {
+	LoginID string   `json:"loginId"`
+	Roles   []string `json:"roles"`
+}
+
+type memberUpdatePayload struct {
+	Roles  *[]string `json:"roles"`
+	Status *string   `json:"status"`
+}
+
 type sessionResponse struct {
-	Member         Member    `json:"member"`
-	AccessToken    string    `json:"accessToken,omitempty"`
-	RefreshToken   string    `json:"refreshToken,omitempty"`
+	Member          Member    `json:"member"`
+	AccessToken     string    `json:"accessToken,omitempty"`
+	RefreshToken    string    `json:"refreshToken,omitempty"`
 	AccessExpiresAt time.Time `json:"expiresAt"`
 }
 
@@ -121,6 +135,65 @@ func (h *HTTPHandler) me(w http.ResponseWriter, r *http.Request) {
 	member, err := h.service.ValidateAccess(r.Context(), accessFromRequest(r))
 	if err != nil {
 		writeAuthError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, member)
+}
+
+func (h *HTTPHandler) currentMember(r *http.Request) (Member, error) {
+	return h.service.ValidateAccess(r.Context(), accessFromRequest(r))
+}
+
+func (h *HTTPHandler) listMembers(w http.ResponseWriter, r *http.Request) {
+	actor, err := h.currentMember(r)
+	if err != nil {
+		writeAuthError(w, err)
+		return
+	}
+	organizationID := r.PathValue("organizationId")
+	members, err := h.memberService.List(r.Context(), actor, organizationID)
+	if err != nil {
+		writeMemberError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": members})
+}
+
+func (h *HTTPHandler) createMember(w http.ResponseWriter, r *http.Request) {
+	actor, err := h.currentMember(r)
+	if err != nil {
+		writeAuthError(w, err)
+		return
+	}
+	var payload memberCreatePayload
+	if !decodeJSON(w, r, &payload) {
+		return
+	}
+	member, err := h.memberService.Create(r.Context(), actor, r.PathValue("organizationId"), MemberCreateRequest{
+		LoginID: payload.LoginID, Roles: payload.Roles,
+	})
+	if err != nil {
+		writeMemberError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, member)
+}
+
+func (h *HTTPHandler) updateMember(w http.ResponseWriter, r *http.Request) {
+	actor, err := h.currentMember(r)
+	if err != nil {
+		writeAuthError(w, err)
+		return
+	}
+	var payload memberUpdatePayload
+	if !decodeJSON(w, r, &payload) {
+		return
+	}
+	member, err := h.memberService.Update(r.Context(), actor, r.PathValue("organizationId"), r.PathValue("memberId"), MemberUpdateRequest{
+		Roles: payload.Roles, Status: payload.Status,
+	})
+	if err != nil {
+		writeMemberError(w, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, member)
@@ -200,6 +273,22 @@ func writeAuthError(w http.ResponseWriter, err error) {
 		status, code = http.StatusBadRequest, "invalid_request"
 	case errors.Is(err, ErrTokenInvalid):
 		status, code = http.StatusBadRequest, "token_invalid"
+	}
+	writeJSON(w, status, map[string]string{"code": code})
+}
+
+func writeMemberError(w http.ResponseWriter, err error) {
+	status := http.StatusUnprocessableEntity
+	code := "invalid_request"
+	switch {
+	case errors.Is(err, ErrAuthorizationDenied):
+		status, code = http.StatusForbidden, "authorization_denied"
+	case errors.Is(err, ErrMemberConflict):
+		status, code = http.StatusConflict, "conflict"
+	case errors.Is(err, ErrMemberProtected):
+		status, code = http.StatusConflict, "member_protected"
+	case errors.Is(err, ErrInvalidRequest):
+		status, code = http.StatusUnprocessableEntity, "invalid_request"
 	}
 	writeJSON(w, status, map[string]string{"code": code})
 }

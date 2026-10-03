@@ -22,6 +22,7 @@ export async function validateMachineSchemas(directory = contractRoot) {
     ['identity.schema.json', ['identity/authorization.json']],
     ['bootstrap.schema.json', ['identity/bootstrap.json']],
     ['session.schema.json', ['identity/session.json']],
+    ['members.schema.json', ['identity/members.json']],
     ['identity-lifecycle.schema.json', ['identity/lifecycle.json']],
   ]) {
     const schema = JSON.parse(await readFile(resolve(import.meta.dirname, schemaName), 'utf8'));

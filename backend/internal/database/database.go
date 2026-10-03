@@ -12,7 +12,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-const CurrentMigrationVersion int64 = 3
+const CurrentMigrationVersion int64 = 4
 
 func Open(url string) (*sql.DB, error) {
 	if url == "" {

@@ -26,10 +26,11 @@ func main() {
 		addr = "127.0.0.1:8080"
 	}
 	authService := identity.NewAuthService(identity.NewSQLAuthStore(db), nil)
+	memberService := identity.NewMemberService(identity.NewSQLMemberStore(db))
 	server := &http.Server{
-		Addr:              addr,
+		Addr: addr,
 		Handler: platform.NewHandlerWithRoutes(map[string]http.Handler{
-			"/v1/": identity.NewHTTPHandler(authService),
+			"/v1/": identity.NewHTTPHandler(authService, memberService),
 		}, database.Ready(db)),
 		ReadHeaderTimeout: 5 * time.Second,
 	}

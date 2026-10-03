@@ -37,7 +37,7 @@ try {
     }
     if (-not $ready) { throw 'PostgreSQL did not recover after restart.' }
     $version = & podman compose -f infra/compose.yaml exec -T postgres psql -U emergency_dev -d $name -Atc 'SELECT version_id FROM goose_db_version ORDER BY id DESC LIMIT 1'
-    if ($LASTEXITCODE -ne 0 -or [int64](($version -join '').Trim()) -lt 3) { throw 'Migration state did not survive restart.' }
+    if ($LASTEXITCODE -ne 0 -or [int64](($version -join '').Trim()) -lt 4) { throw 'Migration state did not survive restart.' }
     $env:TEST_PERSISTED_DATABASE_URL = $env:TEST_DATABASE_URL
     Push-Location backend
     try { Invoke-Checked go @('test','./internal/database','-run','TestPersistedReadiness','-count=1','-v') }

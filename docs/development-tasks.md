@@ -32,7 +32,7 @@
 | P1-01 / DONE | 身份/组织模块设计与契约；依赖 P0-06 | 明确登录凭据、激活/重置/失效、会话、首位管理员操作入口、四角色与兼任边界；OpenAPI、数据约束、错误/状态案例齐备；凭据选择待确认，不暗中引入公众注册 |
 | P1-02 / PARTIAL | 组织及首位管理员开通；依赖 P1-01、P0-03 | 持久化组织/成员及线下材料来源、开通人；受控实施入口不成为日常第五角色；重复开通防护、更换核验留痕；测试材料只在隔离环境 |
 | P1-03 / PARTIAL | 会话与逐次身份校验；依赖 P1-02 | 已完成服务层、PostgreSQL 存储、HTTP 最小入口、迁移和软件侧测试；仍待专用 PostgreSQL 集成与端到端客户端验收 |
-| P1-04 / PARTIAL | 本方成员管理与审计；依赖 P1-03 | 复用内部 CanManageMembers 及机器案例；补 API、数据库、授权/撤销审计和首位管理员保护；并发授权/撤权、越权管理、保留历史执行人等集成测试通过 |
+| P1-04 / PARTIAL | 本方成员管理与审计；依赖 P1-03 | 已完成成员 API、数据库事务、审计表、角色/范围校验和软件侧回归测试；仍待专用 PostgreSQL 集成、HTTP 端到端和客户端联调验收 |
 | P1-05 / TODO | Web/App 身份入口；依赖 P1-03、P1-04 | 单 App 依据服务端身份进入企业/行政工作区；部门 Web 与组织购买会话边界隔离；退出/撤权清理敏感状态，无自由角色切换授予权限 |
 | P1-06 / TODO | 最小组织阶段验收；依赖 P1-05 | 两个单位与一个部门的隔离测试，管理员兼任本方执行角色、跨组织拒绝与撤权即时生效演示；记录审计证据，不把平台角色当行政资格 |
 
@@ -229,3 +229,15 @@
 - 验收命令与结果：`npm run check --prefix scripts/contracts` 通过；在 `backend` 目录执行 `go test ./...` 和 `go vet ./...` 通过。尚未设置 `POSTGRES_PASSWORD`，未执行本次专用 PostgreSQL 集成；Flutter 真实登录链路尚未接入，因此任务保持 `PARTIAL`。
 - 数据/回退：新增不可变迁移 `00003_identity_sessions.sql`；不修改已有迁移的历史语义。回退应使用新的回退迁移或回滚发布版本，不删除已有数据卷。
 - 下一步：补充专用 PostgreSQL 集成证据和 Flutter 端真实登录/凭据存储验证；在用户验收 P1-03 前不进入 P1-04。
+
+## P1-04 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-04。依赖 P1-03 的会话校验实现已核对；P1-03 本身仍保持 `PARTIAL`，本任务只复用其已交付的服务端逐次校验，不宣称 P1-03 集成验收完成。
+- 范围：本组织成员列表、创建、角色/状态更新、管理员范围校验、首位管理员保护、成员变更审计；不进入 P1-05 工作区、邀请渠道、行政资格或跨组织管理。
+- 契约：新增[成员管理契约](../constras/identity/members.md)、[成员机器契约](../constras/identity/members.json)和 Schema 门禁；更新身份契约索引。既有 OpenAPI 成员路径接入实际 HTTP handler。
+- 实现：[成员服务](../backend/internal/identity/member.go)、[PostgreSQL 存储](../backend/internal/identity/member_sql.go)、[身份 HTTP handler](../backend/internal/identity/http.go)；新增不可变迁移 `00004_member_management.sql`，建立 `member_audit_events`，数据库当前迁移版本提升为 4。
+- 规则：仅当前 active 管理员可管理同组织成员；执行人员和跨组织请求拒绝；新成员固定为 `pending`；角色按组织类型校验；首位管理员不能通过普通成员接口修改；创建、角色变化和状态变化记录审计快照。
+- 测试：覆盖执行人员拒绝、跨组织拒绝、组织类型角色拒绝、pending 创建、首位管理员保护、角色/状态审计和并发重复登录标识。契约门禁、文档治理、Go test/vet 已通过。
+- 验收命令与结果：`npm run check --prefix scripts/contracts`、`scripts/test/check-doc-governance.ps1`、`scripts/test/check-machine-contracts.ps1`、`go test ./...`、`go vet ./...` 均通过；`scripts/test/preflight.ps1` 待本轮最终执行。专用 PostgreSQL 集成未执行，HTTP 端到端和 Flutter 客户端联调未执行，任务保持 `PARTIAL`。
+- 数据/回退：只新增 `00004_member_management.sql`，不改写已提交迁移；回退使用新的回退迁移或回滚发布版本，不删除数据卷。审计记录保留成员历史，不记录密码或令牌原文。
+- 下一步：使用专用 PostgreSQL 执行迁移、并发、授权/撤权和审计集成验收，再由用户确认 P1-04；未验收前不进入 P1-05。
