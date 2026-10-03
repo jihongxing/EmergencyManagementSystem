@@ -34,7 +34,7 @@
 | P1-03 / PARTIAL | 会话与逐次身份校验；依赖 P1-02 | 已完成服务层、PostgreSQL 存储、HTTP 最小入口、迁移和软件侧测试；仍待专用 PostgreSQL 集成与端到端客户端验收 |
 | P1-04 / PARTIAL | 本方成员管理与审计；依赖 P1-03 | 已完成成员 API、数据库事务、审计表、角色/范围校验和软件侧回归测试；仍待专用 PostgreSQL 集成、HTTP 端到端和客户端联调验收 |
 | P1-05 / PARTIAL | Web/App 身份入口；依赖 P1-03、P1-04 | 已完成入口契约、Web 身份驱动壳、Flutter 单 App 最小工作区状态和软件侧测试；仍待真实服务端联调、Flutter 网络/安全存储接入及撤权端到端验收 |
-| P1-06 / TODO | 最小组织阶段验收；依赖 P1-05 | 两个单位与一个部门的隔离测试，管理员兼任本方执行角色、跨组织拒绝与撤权即时生效演示；记录审计证据，不把平台角色当行政资格 |
+| P1-06 / PARTIAL | 最小组织阶段验收；依赖 P1-05 | 已完成两个单位与一个部门的隔离验收测试、管理员兼任、跨组织拒绝、撤权即时生效和审计证据；仍待真实 PostgreSQL、Web/App 联调和完整阶段演示 |
 
 已有成果仅为 [identity 内部契约](../constras/identity/README.md)与 Go 内部判定测试；P1-04 不因该函数已完成而标 DONE。
 
@@ -252,3 +252,12 @@
 - 测试：机器契约及负测、Web SSR 壳测试、Web 构建、Flutter 分析和 Flutter 测试通过。专用 PostgreSQL、真实 Web 联调、Flutter 网络请求/平台安全存储、真机撤权链路尚未执行，任务保持 `PARTIAL`。
 - 数据/回退：不新增数据库迁移，不修改已提交迁移；客户端改动可随版本回退，Web 不保存令牌到 `localStorage`。Flutter 的真实 refresh token 安全存储仍需后续契约和平台验证。
 - 下一步：补齐真实 Web/App API 联调与 Flutter 可替换网络/安全存储实现，再由用户确认 P1-05；不自动进入 P1-06。
+
+## P1-06 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-06。依赖 P1-05 的软件侧入口和身份契约已核对；本轮不扩展 P2 场所/对象或任何行政业务。
+- 范围：固定隔离测试资料中的两个企业组织和一个部门组织；验证组织隔离、企业管理员兼任执行角色、部门管理员兼任检查角色、跨组织拒绝、成员审计和撤权后现有会话立即失效。
+- 契约/证据：[P1-06 最小组织阶段验收](acceptance/p1-06-minimum-organization.md)；专用测试为 [`TestP1MinimumOrganizationAcceptance`](../backend/internal/identity/p1_acceptance_test.go)。测试资料不代表真实企业、部门、辖区、行政资格或检查授权。
+- 结果：软件侧阶段验收测试通过；两个企业和一个部门的成员列表均按组织隔离，跨组织访问被拒绝，管理员兼任场景通过，成员状态变化产生组织/操作者/目标/前后状态审计证据，已有会话在撤权后下一次服务端校验被拒绝。
+- 验收命令与结果：`go test ./internal/identity -run TestP1MinimumOrganizationAcceptance -count=1` 通过；`go test ./internal/identity` 通过；`go vet ./internal/identity` 通过；统一 `scripts/test/preflight.ps1` 通过。预检明确跳过真实 PostgreSQL 集成。
+- 未完成/边界：专用 PostgreSQL 集成、真实 Web/App 联调、Flutter 平台安全存储、真机撤权演示及外部行政资料均未在本轮完成；因此 P1-06 保持 `PARTIAL`，不自动进入 P2。
