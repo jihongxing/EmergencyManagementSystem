@@ -20,6 +20,7 @@ export async function validateMachineSchemas(directory = contractRoot) {
       '03-rules-and-records.json', '04-subscription.json', '05-platform.json',
     ]],
     ['identity.schema.json', ['identity/authorization.json']],
+    ['identity-lifecycle.schema.json', ['identity/lifecycle.json']],
   ]) {
     const schema = JSON.parse(await readFile(resolve(import.meta.dirname, schemaName), 'utf8'));
     const validate = ajv.compile(schema);
@@ -27,6 +28,51 @@ export async function validateMachineSchemas(directory = contractRoot) {
       const contract = JSON.parse(await readFile(resolve(directory, file), 'utf8'));
       if (!validate(contract)) throw new Error(`${file}: ${ajv.errorsText(validate.errors)}`);
     }
+  }
+  const dataSchema = JSON.parse(await readFile(resolve(directory, 'identity/data.schema.json'), 'utf8'));
+  const dataValidate = ajv.compile(dataSchema);
+  const dataFixture = {
+    version: 1,
+    organization: {
+      id: 'org_o1',
+      kind: 'enterprise',
+      name: 'Fixture Enterprise',
+      status: 'active',
+      createdAt: '2026-10-03T00:00:00Z',
+    },
+    member: {
+      id: 'mem_m1',
+      userId: 'usr_u1',
+      organizationId: 'org_o1',
+      loginId: 'admin@example.invalid',
+      status: 'active',
+      roles: ['enterprise_admin', 'enterprise_executor'],
+      createdAt: '2026-10-03T00:00:00Z',
+      updatedAt: '2026-10-03T00:00:00Z',
+    },
+    session: {
+      id: 'ses_s1',
+      memberId: 'mem_m1',
+      client: 'web',
+      createdAt: '2026-10-03T00:00:00Z',
+      expiresAt: '2026-10-03T01:00:00Z',
+      revokedAt: null,
+    },
+    passwordReset: {
+      id: 'rst_r1',
+      memberId: 'mem_m1',
+      expiresAt: '2026-10-03T01:00:00Z',
+      usedAt: null,
+      revokedAt: null,
+    },
+  };
+  if (!dataValidate(dataFixture)) throw new Error(`identity/data.schema.json: ${ajv.errorsText(dataValidate.errors)}`);
+  await SwaggerParser.validate(resolve(directory, 'identity/identity.openapi.json'), { validate: { spec: true } });
+  const identityDocument = JSON.parse(await readFile(resolve(directory, 'identity/identity.openapi.json'), 'utf8'));
+  if (!identityDocument.paths?.['/v1/auth/login']?.post ||
+      !identityDocument.paths?.['/v1/organizations/{organizationId}/members']?.post ||
+      !identityDocument.paths?.['/v1/controlled/organizations/bootstrap']?.post) {
+    throw new Error('identity.openapi.json: required P1-01 operations are missing');
   }
 }
 

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "clauses", "cases"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "clauses": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^C(02|05)-[0-9]{2}$"}
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["name", "operation", "input", "expected"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "operation": {"enum": ["login", "protected_request", "manage_member", "bootstrap", "assign_roles"]},
+          "input": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {"type": "boolean"},
+                {"type": "string"},
+                {"type": "null"}
+              ]
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": ["allowed", "status", "code"],
+            "additionalProperties": false,
+            "properties": {
+              "allowed": {"type": "boolean"},
+              "status": {"type": "integer", "minimum": 100, "maximum": 599},
+              "code": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

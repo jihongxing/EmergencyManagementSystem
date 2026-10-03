@@ -9,6 +9,7 @@
 | [03-rules-and-records.md](03-rules-and-records.md) | 规则版本、自检和行政记录、整改与历史 | [权威](../docs/ssot/02-authority.md)、[双轨流程](../docs/ssot/05-workflows.md) |
 | [04-subscription.md](04-subscription.md) | 免费/付费权益、购买与到期 | [产品](../docs/ssot/01-product.md) |
 | [05-platform.md](05-platform.md) | 客户端、服务端、存储及在线提交边界 | [技术](../docs/ssot/06-technology.md) |
+| [identity/](identity/README.md) | P1-01 身份/组织模块接口、数据与生命周期契约 | [权限](../docs/ssot/04-access.md)、[场所与身份](../docs/ssot/03-site-identity.md) |
 
 ## 机器可读判定
 

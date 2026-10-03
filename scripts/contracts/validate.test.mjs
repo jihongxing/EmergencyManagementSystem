@@ -53,7 +53,8 @@ test('behavior and identity JSON Schemas reject unknown and missing fields', asy
   try {
     for (const file of ['01-scope-and-identity.json', '02-access-and-evidence.json',
       '03-rules-and-records.json', '04-subscription.json', '05-platform.json',
-      'identity/authorization.json']) {
+      'identity/authorization.json', 'identity/lifecycle.json',
+      'identity/data.schema.json', 'identity/identity.openapi.json']) {
       await mkdir(resolve(fixture, file, '..'), { recursive: true });
       await writeFile(resolve(fixture, file), await readFile(resolve(root, '..', file)));
     }
@@ -68,6 +69,12 @@ test('behavior and identity JSON Schemas reject unknown and missing fields', asy
     const identityOriginal = JSON.parse(await readFile(identity, 'utf8'));
     identityOriginal.cases[0].member.extra = true;
     await writeFile(identity, JSON.stringify(identityOriginal));
+    await assert.rejects(validateMachineSchemas(fixture), /additional properties/);
+    await writeFile(identity, await readFile(resolve(root, '..', 'identity/authorization.json')));
+    const lifecycle = resolve(fixture, 'identity/lifecycle.json');
+    const lifecycleOriginal = JSON.parse(await readFile(lifecycle, 'utf8'));
+    lifecycleOriginal.cases[0].expected.extra = true;
+    await writeFile(lifecycle, JSON.stringify(lifecycleOriginal));
     await assert.rejects(validateMachineSchemas(fixture), /additional properties/);
   } finally {
     await rm(fixture, { recursive: true, force: true });
