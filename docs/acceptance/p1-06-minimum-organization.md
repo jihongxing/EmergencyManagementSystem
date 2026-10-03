@@ -1,6 +1,6 @@
 # P1-06 最小组织阶段验收
 
-状态：`SOFTWARE ACCEPTANCE EVIDENCE`。日期：2026-10-03。对应任务：[P1-06](../development-tasks.md)。
+状态：`SOFTWARE ACCEPTANCE PASSED`。日期：2026-10-03。对应任务：[P1-06](../development-tasks.md)。统一验收记录见[ P1-02 至 P1-06 身份与最小组织统一验收](p1-02-to-p1-06-acceptance.md)。
 
 ## 验收边界
 
@@ -16,7 +16,7 @@
 
 测试组织、成员和密码均为隔离测试资料，不是实际企业、部门、辖区、行政资格或检查授权。
 
-## 验收证据
+## 内存验收证据
 
 执行：
 
@@ -26,13 +26,13 @@ pwsh -NoProfile -ExecutionPolicy Bypass -Command "Set-Location backend; go test 
 
 测试实现：[p1_acceptance_test.go](../../backend/internal/identity/p1_acceptance_test.go)。
 
-## 结论边界
+## 统一验收后的结论边界
 
-该证据证明当前内存服务实现满足 P1-06 的最小隔离场景。它不证明：
+本文件的内存测试证明当前服务实现满足 P1-06 的最小隔离场景；统一验收另已补充真实 PostgreSQL 身份链路证据。仍不证明：
 
 - PostgreSQL 事务、锁和真实数据迁移已完成集成验收；
 - Web 与 Flutter 已完成真实服务端联调；
 - 平台角色等同于行政资格；
 - 已确认任何真实县域、部门、管辖范围或检查事项。
 
-因此任务状态按工程治理保持为 `PARTIAL`，不得据此自动进入 P2 或把行政业务视为已授权。
+因此 P1 软件侧统一验收通过，但发布级客户端验证和外部行政资料仍是独立缺口，不得据此自动进入 P2 或把行政业务视为已授权。

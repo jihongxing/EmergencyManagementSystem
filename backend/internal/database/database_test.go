@@ -89,7 +89,7 @@ func TestIntegration(t *testing.T) {
 	}
 	assertHTTP(200)
 	files := fstest.MapFS{
-		"00002_failure.sql": &fstest.MapFile{Data: []byte("-- +goose Up\nCREATE TABLE ems.must_rollback (id int);\nSELECT 1/0;\n")},
+		"00005_failure.sql": &fstest.MapFile{Data: []byte("-- +goose Up\nCREATE TABLE ems.must_rollback (id int);\nSELECT 1/0;\n")},
 	}
 	provider, err := goose.NewProvider(goose.DialectPostgres, db, files)
 	if err != nil {
