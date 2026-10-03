@@ -79,6 +79,8 @@ func TestIntegration(t *testing.T) {
 		"ems.members",
 		"ems.organization_materials",
 		"ems.identity_audit_events",
+		"ems.sessions",
+		"ems.password_resets",
 	} {
 		if err := db.QueryRowContext(ctx, "SELECT to_regclass($1) IS NOT NULL", table).Scan(&exists); err != nil || !exists {
 			t.Fatalf("identity bootstrap table missing: %s (%v)", table, err)

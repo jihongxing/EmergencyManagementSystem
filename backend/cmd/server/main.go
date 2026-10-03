@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"emergency-management/backend/internal/database"
+	"emergency-management/backend/internal/identity"
 	"emergency-management/backend/internal/platform"
 )
 
@@ -24,9 +25,12 @@ func main() {
 	if addr == "" {
 		addr = "127.0.0.1:8080"
 	}
+	authService := identity.NewAuthService(identity.NewSQLAuthStore(db), nil)
 	server := &http.Server{
 		Addr:              addr,
-		Handler:           platform.NewHandler(database.Ready(db)),
+		Handler: platform.NewHandlerWithRoutes(map[string]http.Handler{
+			"/v1/": identity.NewHTTPHandler(authService),
+		}, database.Ready(db)),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

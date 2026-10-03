@@ -45,7 +45,6 @@ CREATE TABLE ems.identity_audit_events (
     details jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(details) = 'object'),
     occurred_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- +goose Down
 DROP TABLE ems.identity_audit_events;
 DROP TABLE ems.organization_materials;
