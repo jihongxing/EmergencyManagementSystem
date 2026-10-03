@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ems/entry.schema.json",
+  "type": "object",
+  "required": ["version", "module", "clauses", "policies", "manualClauses"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "module": {"const": "identity-entry"},
+    "clauses": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^C\\d{2}-\\d{2}$"}},
+    "policies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "allowWhen", "cases"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "allowWhen": {"type": "string", "minLength": 1},
+          "cases": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["name", "organizationKind", "allowed"],
+              "additionalProperties": false,
+              "properties": {
+                "name": {"type": "string", "minLength": 1},
+                "organizationKind": {"type": ["string", "null"], "enum": ["enterprise", "department", "province", null]},
+                "allowed": {"type": "boolean"},
+                "workspace": {"type": ["string", "null"], "enum": ["enterprise", "department", null]}
+              }
+            }
+          }
+        }
+      }
+    },
+    "manualClauses": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  }
+}

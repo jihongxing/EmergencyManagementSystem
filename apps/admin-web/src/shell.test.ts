@@ -4,9 +4,10 @@ import { renderToString } from 'vue/server-renderer'
 import App from './App.vue'
 
 describe('engineering shell', () => {
-  it('renders the unauthenticated shell without operational forms', async () => {
+  it('renders the identity entry without operational forms during bootstrap', async () => {
     const html = await renderToString(createSSRApp(App))
-    expect(html).toContain('身份认证与业务接口尚未接入')
-    expect(html).not.toContain('<form')
+    expect(html).toContain('正在读取身份')
+    expect(html).not.toContain('部门管理')
+    expect(html).not.toContain('组织购买')
   })
 })

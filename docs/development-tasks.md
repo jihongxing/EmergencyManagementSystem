@@ -33,7 +33,7 @@
 | P1-02 / PARTIAL | 组织及首位管理员开通；依赖 P1-01、P0-03 | 持久化组织/成员及线下材料来源、开通人；受控实施入口不成为日常第五角色；重复开通防护、更换核验留痕；测试材料只在隔离环境 |
 | P1-03 / PARTIAL | 会话与逐次身份校验；依赖 P1-02 | 已完成服务层、PostgreSQL 存储、HTTP 最小入口、迁移和软件侧测试；仍待专用 PostgreSQL 集成与端到端客户端验收 |
 | P1-04 / PARTIAL | 本方成员管理与审计；依赖 P1-03 | 已完成成员 API、数据库事务、审计表、角色/范围校验和软件侧回归测试；仍待专用 PostgreSQL 集成、HTTP 端到端和客户端联调验收 |
-| P1-05 / TODO | Web/App 身份入口；依赖 P1-03、P1-04 | 单 App 依据服务端身份进入企业/行政工作区；部门 Web 与组织购买会话边界隔离；退出/撤权清理敏感状态，无自由角色切换授予权限 |
+| P1-05 / PARTIAL | Web/App 身份入口；依赖 P1-03、P1-04 | 已完成入口契约、Web 身份驱动壳、Flutter 单 App 最小工作区状态和软件侧测试；仍待真实服务端联调、Flutter 网络/安全存储接入及撤权端到端验收 |
 | P1-06 / TODO | 最小组织阶段验收；依赖 P1-05 | 两个单位与一个部门的隔离测试，管理员兼任本方执行角色、跨组织拒绝与撤权即时生效演示；记录审计证据，不把平台角色当行政资格 |
 
 已有成果仅为 [identity 内部契约](../constras/identity/README.md)与 Go 内部判定测试；P1-04 不因该函数已完成而标 DONE。
@@ -241,3 +241,14 @@
 - 验收命令与结果：`npm run check --prefix scripts/contracts`、`scripts/test/check-doc-governance.ps1`、`scripts/test/check-machine-contracts.ps1`、`go test ./...`、`go vet ./...` 均通过；`scripts/test/preflight.ps1` 待本轮最终执行。专用 PostgreSQL 集成未执行，HTTP 端到端和 Flutter 客户端联调未执行，任务保持 `PARTIAL`。
 - 数据/回退：只新增 `00004_member_management.sql`，不改写已提交迁移；回退使用新的回退迁移或回滚发布版本，不删除数据卷。审计记录保留成员历史，不记录密码或令牌原文。
 - 下一步：使用专用 PostgreSQL 执行迁移、并发、授权/撤权和审计集成验收，再由用户确认 P1-04；未验收前不进入 P1-05。
+
+## P1-05 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-05。依赖 P1-03、P1-04 的软件侧接口已核对；前置任务仍为 `PARTIAL`，本任务不宣称其专用 PostgreSQL 或完整端到端验收已完成。
+- 范围：Web/App 登录入口、当前身份读取、服务端身份驱动的企业/行政工作区边界、退出和失效状态清理；不进入场所、二维码、检查、订阅、支付或行政资格。
+- 契约：新增[身份入口契约](../constras/identity/entry.md)、[机器契约](../constras/identity/entry.json)及 Schema 门禁；更新身份契约索引和统一机器校验。
+- 实现：Web 新增 `apps/admin-web/src/api.ts`、`auth.ts`，入口由 `/v1/me` 当前身份决定，不使用 `localStorage` 令牌；Flutter 单 App 提供未认证、企业工作区、行政工作区和退出的最小状态边界。当前 Flutter 登录为 UI 状态测试替身，未冒充真实服务端链路。
+- 规则：未认证不暴露工作区；`enterprise` 仅进入企业工作区并可见购买占位；`department` 仅进入行政工作区；不提供自由角色切换；前端路由/隐藏菜单不作为授权来源；撤权/停用需要由下一次受保护请求观察并清理。
+- 测试：机器契约及负测、Web SSR 壳测试、Web 构建、Flutter 分析和 Flutter 测试通过。专用 PostgreSQL、真实 Web 联调、Flutter 网络请求/平台安全存储、真机撤权链路尚未执行，任务保持 `PARTIAL`。
+- 数据/回退：不新增数据库迁移，不修改已提交迁移；客户端改动可随版本回退，Web 不保存令牌到 `localStorage`。Flutter 的真实 refresh token 安全存储仍需后续契约和平台验证。
+- 下一步：补齐真实 Web/App API 联调与 Flutter 可替换网络/安全存储实现，再由用户确认 P1-05；不自动进入 P1-06。
