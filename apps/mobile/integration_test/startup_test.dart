@@ -12,10 +12,9 @@ void main() {
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('应急安全检查'), findsOneWidget);
-    expect(
-      find.text('身份认证尚未接入。企业和行政现场工作区将在服务端授权接入后开放。'),
-      findsOneWidget,
-    );
+    expect(find.text('登录标识'), findsOneWidget);
+    expect(find.text('密码'), findsOneWidget);
+    expect(find.text('登录'), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
     expect(tester.takeException(), isNull);
   });
