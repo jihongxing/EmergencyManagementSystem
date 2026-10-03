@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "module": "identity-session",
+  "source": ["C02-01", "C02-02", "C02-03", "C02-04", "C05-01", "C05-05"],
+  "policies": [
+    {
+      "id": "login-active-member",
+      "clauses": ["C02-01", "C02-04", "C05-01"],
+      "facts": ["credentialsValid", "memberActive", "organizationActive"],
+      "allowWhen": {"credentialsValid": true, "memberActive": true, "organizationActive": true},
+      "cases": [
+        {"name": "active member login", "input": {"credentialsValid": true, "memberActive": true, "organizationActive": true}, "allowed": true},
+        {"name": "revoked member login", "input": {"credentialsValid": true, "memberActive": false, "organizationActive": true}, "allowed": false}
+      ]
+    },
+    {
+      "id": "validate-current-member",
+      "clauses": ["C02-03", "C02-04", "C05-05"],
+      "facts": ["sessionValid", "memberActive", "organizationActive"],
+      "allowWhen": {"sessionValid": true, "memberActive": true, "organizationActive": true},
+      "cases": [
+        {"name": "current active state", "input": {"sessionValid": true, "memberActive": true, "organizationActive": true}, "allowed": true},
+        {"name": "revoked after login", "input": {"sessionValid": true, "memberActive": false, "organizationActive": true}, "allowed": false}
+      ]
+    }
+  ],
+  "manualClauses": []
+}

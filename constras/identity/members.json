@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "module": "identity-members",
+  "source": ["C02-01", "C02-03", "C02-04"],
+  "operations": [
+    {"id": "list-own-members", "method": "GET", "path": "/v1/organizations/{organizationId}/members", "requires": ["active_member", "organization_admin", "same_organization"]},
+    {"id": "create-own-member", "method": "POST", "path": "/v1/organizations/{organizationId}/members", "requires": ["active_member", "organization_admin", "same_organization"], "creates": {"status": "pending"}},
+    {"id": "update-own-member", "method": "PATCH", "path": "/v1/organizations/{organizationId}/members/{memberId}", "requires": ["active_member", "organization_admin", "same_organization"], "protects": ["first_admin"]}
+  ],
+  "cases": [
+    {"name": "administrator manages own organization", "allowed": true},
+    {"name": "executor denied", "allowed": false},
+    {"name": "cross organization denied", "allowed": false},
+    {"name": "first administrator protected", "allowed": false},
+    {"name": "created member starts pending", "allowed": true}
+  ],
+  "auditActions": ["member_created", "member_roles_updated", "member_status_updated", "member_updated"]
+}

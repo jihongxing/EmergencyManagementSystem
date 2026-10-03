@@ -17,7 +17,7 @@ go run ./cmd/server
 
 Podman 项目名 `ems-dev`，默认端口 55472，可通过 POSTGRES_PORT 调整；DATABASE_URL 必须同步调整。仅回环地址暴露，开发用户是容器初始化管理员，不能照搬成生产业务账户。SSL 关闭只适用此本地环境。镜像已按本机 PostgreSQL 17 镜像 digest 固定，不操作其他项目容器。
 
-缺失/格式无效 DATABASE_URL 拒绝启动；数据库不可达时 API 可启动，但 `/health/ready` 返回 503，`/health/live` 仍返回 200。ready 检查连接及版本 1，不证明文件服务、权限或行政依据就绪。`go run ./cmd/migrate` 独立向前迁移，只创建 schema 与迁移元数据，不建业务表；后续业务迁移需先补契约，并调整就绪版本。
+缺失/格式无效 DATABASE_URL 拒绝启动；数据库不可达时 API 可启动，但 `/health/ready` 返回 503，`/health/live` 仍返回 200。ready 检查连接及当前程序要求的迁移版本，不证明文件服务、权限或行政依据就绪。`go run ./cmd/migrate` 独立向前迁移，当前包含平台基础和已批准身份开通表；后续业务迁移需先补契约，并同步调整就绪版本。
 
 ## 验证与数据保留
 

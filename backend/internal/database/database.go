@@ -12,6 +12,8 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+const CurrentMigrationVersion int64 = 4
+
 func Open(url string) (*sql.DB, error) {
 	if url == "" {
 		return nil, errors.New("DATABASE_URL is required")
@@ -36,7 +38,7 @@ func Ready(db *sql.DB) func(context.Context) error {
 		var version int64
 		var applied bool
 		err := db.QueryRowContext(ctx, `SELECT version_id, is_applied FROM public.goose_db_version ORDER BY id DESC LIMIT 1`).Scan(&version, &applied)
-		if err != nil || version != 1 || !applied {
+		if err != nil || version < CurrentMigrationVersion || !applied {
 			return errors.New("migration baseline unavailable")
 		}
 		return nil

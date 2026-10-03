@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ems/identity/data.schema.json",
+  "type": "object",
+  "required": ["version", "organization", "member", "session", "passwordReset"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "organization": {
+      "type": "object",
+      "required": ["id", "kind", "name", "externalKey", "status", "createdAt"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^org_[A-Za-z0-9_-]+$"},
+        "kind": {"enum": ["enterprise", "department"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "externalKey": {"type": "string", "minLength": 1, "maxLength": 200},
+        "status": {"enum": ["active", "suspended", "closed"]},
+        "createdAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"}
+      }
+    },
+    "member": {
+      "type": "object",
+      "required": ["id", "userId", "organizationId", "loginId", "status", "roles", "createdAt", "updatedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^mem_[A-Za-z0-9_-]+$"},
+        "userId": {"type": "string", "pattern": "^usr_[A-Za-z0-9_-]+$"},
+        "organizationId": {"type": "string", "pattern": "^org_[A-Za-z0-9_-]+$"},
+        "loginId": {"type": "string", "minLength": 1, "maxLength": 200},
+        "status": {"enum": ["pending", "active", "suspended", "revoked"]},
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["enterprise_admin", "enterprise_executor", "department_admin", "inspector"]}
+        },
+        "createdAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+        "updatedAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"}
+      }
+    },
+    "session": {
+      "type": "object",
+      "required": ["id", "memberId", "client", "createdAt", "expiresAt", "revokedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^ses_[A-Za-z0-9_-]+$"},
+        "memberId": {"type": "string", "pattern": "^mem_[A-Za-z0-9_-]+$"},
+        "client": {"enum": ["web", "flutter_android", "flutter_ios"]},
+        "createdAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+        "expiresAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+        "revokedAt": {
+          "anyOf": [
+            {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "passwordReset": {
+      "type": "object",
+      "required": ["id", "memberId", "expiresAt", "usedAt", "revokedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^rst_[A-Za-z0-9_-]+$"},
+        "memberId": {"type": "string", "pattern": "^mem_[A-Za-z0-9_-]+$"},
+        "expiresAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+        "usedAt": {
+          "anyOf": [
+            {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+            {"type": "null"}
+          ]
+        },
+        "revokedAt": {
+          "anyOf": [
+            {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"},
+            {"type": "null"}
+          ]
+        }
+      }
+    }
+  }
+}

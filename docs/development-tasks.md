@@ -17,11 +17,11 @@
 | P0-01 / DONE | 方案与工程基线对齐；用户已确认最小选型 | [基线核对](engineering-baseline.md)完成；技术 SSOT、决策索引、OPEN、技术方案及平台契约已同步，保留待决与发布边界 |
 | P0-02 / DONE | 版本控制与实际 CI；用户已指定 GitHub 仓库 | 基线已推送，实际 CI 运行 36445834084 成功；main 要求 PR、最新分支与 preflight，通过 API 回读确认保护生效；不包含原生构建 |
 | P0-03 / DONE | 本地与测试环境可复现；依赖 P0-01 | 已提供[运行说明](database-development.md)、连接/就绪契约与独立迁移，实际 PostgreSQL 集成及重启保留验证通过；无业务表，远程 CI 数据库集成尚未接入 |
-| P0-04 / PARTIAL | 机器契约门禁；依赖 P0-01 | 现有判定 JSON、身份案例和 OpenAPI 全部有实际校验入口；引入完整规范校验及响应验证、引用/未知字段/错误案例负测；损坏契约使门禁失败，不能仅检查文件存在 |
-| P0-05 / PARTIAL | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
-| P0-06 / TODO | 基线验收；依赖 P0-02 至 P0-05 | 从干净检出按 README 安装并预检，记录工具版本、命令、CI 与双端证据；更新路线图，请用户验收 |
+| P0-04 / DONE | 机器契约门禁；依赖 P0-01 | 判定 JSON、身份案例按 JSON Schema 及语义校验；OpenAPI 3.1 规范/引用与 Go 实际探针响应按 Schema 校验；损坏、未知字段、错误案例、断引用等负测会使门禁失败 |
+| P0-05 / DONE | 双端工程验证；依赖 P0-01 | 保留已有 Flutter analyze/widget 测试；实际 Android debug 构建、macOS iOS 无签名构建与至少基础启动验证；缺少 macOS 时记录阻塞，不以原生目录存在代替构建 |
+| P0-06 / DONE | 基线验收；依赖 P0-02 至 P0-05 | 从干净检出按 README 安装并预检，记录工具版本、命令、CI 与双端证据；更新路线图，请用户验收 |
 
-已有证据：本地 preflight 已通过，Web 构建/SSR 测试、Go test/vet、Flutter analyze/widget 测试、原生目录及锁文件存在；Podman 仅验证配置，远程 CI/原生构建尚无证据。以上仅支撑 PARTIAL，不误记 P0 已验收。
+已有证据：本地和干净检出 preflight 均已通过，Web 构建/SSR 测试、Go test/vet、Flutter analyze/widget 测试、原生目录及锁文件存在；P0-02 至 P0-05 的远程 CI、数据库独立验证和双端原生证据已齐备。P0-06 已完成工程验收，P0 阶段仍等待用户确认后才进入 P1。
 
 ## P1 身份与最小组织
 
@@ -29,14 +29,39 @@
 
 | ID / 状态 | 任务与依赖 | 交付及验收标准 |
 | --- | --- | --- |
-| P1-01 / TODO | 身份/组织模块设计与契约；依赖 P0-06 | 明确登录凭据、激活/重置/失效、会话、首位管理员操作入口、四角色与兼任边界；OpenAPI、数据约束、错误/状态案例齐备；凭据选择待确认，不暗中引入公众注册 |
-| P1-02 / TODO | 组织及首位管理员开通；依赖 P1-01、P0-03 | 持久化组织/成员及线下材料来源、开通人；受控实施入口不成为日常第五角色；重复开通防护、更换核验留痕；测试材料只在隔离环境 |
-| P1-03 / TODO | 会话与逐次身份校验；依赖 P1-02 | 登录/退出/凭据恢复、移动端安全存储、Web 会话防护；每次读取当前成员状态；失效凭据、撤权后旧请求、错误密码等测试通过，不只依赖前端隐藏入口 |
-| P1-04 / PARTIAL | 本方成员管理与审计；依赖 P1-03 | 复用内部 CanManageMembers 及机器案例；补 API、数据库、授权/撤销审计和首位管理员保护；并发授权/撤权、越权管理、保留历史执行人等集成测试通过 |
-| P1-05 / TODO | Web/App 身份入口；依赖 P1-03、P1-04 | 单 App 依据服务端身份进入企业/行政工作区；部门 Web 与组织购买会话边界隔离；退出/撤权清理敏感状态，无自由角色切换授予权限 |
-| P1-06 / TODO | 最小组织阶段验收；依赖 P1-05 | 两个单位与一个部门的隔离测试，管理员兼任本方执行角色、跨组织拒绝与撤权即时生效演示；记录审计证据，不把平台角色当行政资格 |
+| P1-01 / DONE | 身份/组织模块设计与契约；依赖 P0-06 | 明确登录凭据、激活/重置/失效、会话、首位管理员操作入口、四角色与兼任边界；OpenAPI、数据约束、错误/状态案例齐备；凭据选择待确认，不暗中引入公众注册 |
+| P1-02 / DONE（软件侧） | 组织及首位管理员开通；依赖 P1-01、P0-03 | 持久化组织/成员及线下材料来源、开通人；受控实施入口不成为日常第五角色；重复开通防护、更换核验留痕；测试材料只在隔离环境 |
+| P1-03 / DONE（软件侧） | 会话与逐次身份校验；依赖 P1-02 | 服务层、PostgreSQL 存储、HTTP 最小入口、迁移、专用 PostgreSQL 身份验收和软件侧测试通过；真实客户端端到端仍为独立缺口 |
+| P1-04 / DONE（软件侧） | 本方成员管理与审计；依赖 P1-03 | 成员 API、数据库事务、审计表、角色/范围校验、专用 PostgreSQL 验收和软件侧回归测试通过；真实客户端联调仍为独立缺口 |
+| P1-05 / DONE（软件侧） | Web/App 身份入口；依赖 P1-03、P1-04 | 入口契约、Web 身份驱动壳、Flutter 单 App 最小工作区状态和软件侧测试通过；Flutter 网络/平台安全存储及真机验收仍为独立缺口 |
+| P1-06 / DONE（软件侧） | 最小组织阶段验收；依赖 P1-05 | 两个企业与一个部门的隔离、管理员兼任、跨组织拒绝、撤权即时生效、审计及 PostgreSQL 链路验收通过；真实 Web/App 联调和完整阶段演示仍为发布级缺口 |
 
-已有成果仅为 [identity 内部契约](../constras/identity/README.md)与 Go 内部判定测试；P1-04 不因该函数已完成而标 DONE。
+统一验收证据：[P1-02 至 P1-06 身份与最小组织统一验收](acceptance/p1-02-to-p1-06-acceptance.md)；本次状态表示软件侧任务退出，不表示真实客户端发布验收或行政实施资料已齐备。
+
+## P1-01 执行记录
+
+- 完成日期：2026-10-03，Codex；依赖 P0-06 已由用户正式验收通过。本任务只交付身份/组织模块设计与契约，不实现登录、数据库业务表、账号开通或客户端工作区。
+- 契约交付：[模块边界与验收说明](../constras/identity/module.md)、[身份数据 Schema](../constras/identity/data.schema.json)、[生命周期案例](../constras/identity/lifecycle.json)、[身份 OpenAPI](../constras/identity/identity.openapi.json)。现有内部授权案例继续保留并纳入同一模块索引。
+- 已确定的最小实现边界：不开放公众注册；组织类型仅为单位和部门；日常角色仍为四类；首位管理员由受控实施入口依据已核验线下材料建立；本方管理员管理本方成员；单位/部门管理员可分别兼任本方执行/检查角色；撤权后后续访问拒绝且历史署名保留。
+- 凭据与会话：组织内唯一登录标识加密码；Web 服务端会话 Cookie；Flutter 短时访问凭据加可撤销刷新凭据；每次受保护请求重新核对服务端成员状态、组织和角色。恢复请求不泄露账号存在性。
+- 机器门禁：扩展 `scripts/contracts/validate.mjs` 实际解析身份数据 Schema、生命周期 Schema 和身份 OpenAPI；扩展 `validate.test.mjs` 覆盖生命周期未知字段负测。文档治理、机器契约检查和契约测试均通过。
+- 未冻结/未伪造内容：恢复渠道、密码策略强度、密钥托管、生产部署、实施人员凭据、行政资格材料及试点外部输入仍不在本任务内；OpenAPI 中受控实施安全方案只是接口边界，不表示实施凭据已经实现。
+- 结果：P1-01 验收通过，下一步为 P1-02 组织及首位管理员开通；在用户明确推进前不自动开始 P1-02。
+
+## P1-02 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-02。
+- 依赖核验：P1-01 身份/组织模块契约已完成；P0-03 数据库连接、迁移和就绪基础已完成；当前未进入 P1-03 登录/会话实现。
+- 契约：新增[组织及首位管理员开通契约](../constras/identity/bootstrap.md)及机器契约[bootstrap.json](../constras/identity/bootstrap.json)，新增专用 JSON Schema 并接入 `scripts/contracts` 实际解析；扩展身份 OpenAPI、组织数据形状和模块约束。
+- 实现：新增 `ems.organizations`、`ems.members`、`ems.organization_materials`、`ems.identity_audit_events` 迁移；实现受控开通与首位管理员更换服务、内存验收存储及 PostgreSQL 事务存储。开通只创建 `pending` 首位管理员，不接收初始密码；材料核验、稳定外部标识、组织唯一性、旧管理员撤销和审计均在服务/数据库约束中执行。
+- 测试与验收：
+  - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/check-doc-governance.ps1`：通过。
+  - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/check-machine-contracts.ps1`：通过。
+  - `npm run check --prefix scripts/contracts`：通过，2 个契约测试通过。
+  - `go test ./...`（工作目录 `backend`）：通过。
+  - `go vet ./...`（工作目录 `backend`）：通过。
+  - 数据库真实集成验证：本轮未设置专用 `TEST_DATABASE_URL`，未将单元测试冒充 PostgreSQL 集成通过；迁移文件已纳入 Goose，下一次提供隔离数据库后执行。
+- 结果：P1-02 的契约、代码、单元测试和治理门禁完成；因本轮未提供专用 PostgreSQL 数据库，真实迁移/事务集成验收尚未完成，任务保持 `PARTIAL`。P1-03 登录、会话、凭据恢复和激活仍未开始；P1-06 阶段验收未完成。
 
 ## P2 场所、对象与二维码
 
@@ -166,3 +191,73 @@
 - 实际验证：`preflight.ps1 -Database` 通过文档、Go test/vet、真实 PostgreSQL 集成、Web 构建/测试、Flutter analyze/test；空库 503、迁移后 200、重复迁移、失败事务回滚、不可达库和存活分离、停止/重启版本保留均覆盖。
 - 环境影响：仅创建并重启本项目 `ems-dev-postgres-1`；保留测试库和命名卷，未删除其他项目数据。密码为本机临时随机值，不打印/提交，接管方法见运行说明。
 - 限制：Windows 远程 CI 普通预检显式跳过数据库集成；未验证生产权限拆分、备份恢复、并发部署迁移或原生移动构建。下一任务 P0-04，不进入身份业务。
+
+## P0-04 执行记录
+
+- 日期/负责人：2026-09-29，Codex；依赖 P0-01 已完成。依据：平台 C05、[行为与权限契约](../constras/README.md)、[身份案例](../constras/identity/authorization.json)及[探针 OpenAPI](../constras/platform/live.openapi.json)。
+- 范围：增加[严格机器契约检查](../scripts/test/check-machine-contracts.ps1)、[行为与身份 JSON Schema](../scripts/contracts/behavior.schema.json)、[OpenAPI/响应校验](../scripts/contracts/validate.test.mjs)及锁定的 npm 依赖；统一预检和 CI 安装并实际执行；Go `httptest` 输出存活 200、就绪 200/503 的响应供 OpenAPI Schema 校验。
+- 验收：机器门禁校验必填字段、未知字段、来源条款与案例准入预期；隔离负测覆盖损坏 JSON、缺文件、断引用、错误 operationId/状态码、错误预期和响应体/内容类型不一致。`pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1` 通过文档、契约、Go test/vet、Web build/test、Flutter analyze/test；实际数据库集成因本次会话未设置 `POSTGRES_PASSWORD` 未重跑，沿用 P0-03 原有独立验证记录，不宣称本次数据库集成通过。
+- 数据/回退：无数据库迁移或业务数据变更；回退为撤销本任务的校验脚本、测试与 CI 依赖更改。P0-05 原生双端构建尚未完成；P0-06 阶段验收未开始。
+
+## P0-05 执行记录
+
+- 日期/负责人：2026-09-29，Codex。依据 C05-01 和[移动工程验证契约](../constras/platform/mobile-validation.md)；P0-01 已完成。不新增业务功能、正式标识或发布签名。
+- [原生工作流](../.github/workflows/mobile.yml)分别运行 Android debug 构建与模拟器启动、macOS iOS 无签名构建与 iPhone 模拟器启动；[启动测试](../apps/mobile/integration_test/startup_test.dart)只验证未认证壳。工作流存在不等于验收通过。
+- 本机 Windows 配备 Flutter 3.44.0、Android SDK 36；无本地 macOS。Android 首次构建曾补下载引擎组件，本进程使用本机现有代理，不更改全局代理。
+- 远程 push CI `36546950109`（提交 `3d963bb`）和对应 PR CI `36546955477` 均成功：Android debug APK 构建并在 Linux 原生模拟器运行 `integration_test/startup_test.dart`，断言未认证应用壳启动；macOS-15 使用 Xcode 16.4 完成 iOS `--debug --no-codesign` 设备构建，并完成 iPhone 模拟器构建、安装、启动、进程存活检查及启动截图。
+- iOS 启动截图已人工核验：显示“应急安全检查”和身份认证未接入提示，不显示企业或行政工作区。证据工作流：[mobile.yml](../.github/workflows/mobile.yml)；原生验证契约：[mobile-validation.md](../constras/platform/mobile-validation.md)。
+- 结果：P0-05 验收通过；下一步仅为 P0-06 基线验收，未进入 P1 身份业务。
+
+## P0-06 执行记录
+
+- 完成验证日期：2026-09-29（本机 Asia/Shanghai，任务跨日执行）。
+- 前置：PR #5 已合并，合并提交为 `c73212c5bb0cc4fbb47ab281840060871268871e`；本任务分支 `codex/p0-06-baseline-acceptance` 基于该提交建立。干净验收检出位于 `D:/codeSpace/EmergencyManagementSystem-p0-06-clean`，检出提交为 `c73212c`，工作区无未提交文件。
+- 复现安装：按 README 和锁文件执行 `scripts/contracts/npm ci`、`apps/admin-web/npm ci`、`apps/mobile/flutter pub get --enforce-lockfile`，三项均成功；未提交 `node_modules`、`.dart_tool` 或构建产物。`apps/admin-web` 的 npm 安装报告 2 个 moderate audit advisories，未阻断本次工程基线验收，列为依赖维护项。
+- 工具版本：Git `2.51.2.windows.1`；Go `1.25.5 windows/amd64`；Node `22.23.2`；npm `10.9.8`；Flutter `3.44.0`；Dart `3.12.0`；Podman `5.7.1`。版本与 `.nvmrc`、Flutter SDK 约束及现有 CI 记录一致。
+- 本轮验收命令：在干净检出执行 `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/preflight.ps1`，退出码 0。机器契约门禁通过；契约 npm 测试 2/2 通过；Go test/vet 通过；Web build 和 1 个 Vitest 测试通过；Flutter analyze 无问题、widget test 1/1 通过；脚本按设计提示未执行真实 PostgreSQL 集成。
+- 数据库证据边界：本轮干净验收未设置 `POSTGRES_PASSWORD`，因此没有执行 `preflight.ps1 -Database`。P0-03 已完成并记录独立 PostgreSQL 连接、迁移、就绪、失败回滚及停止/重启保留验证；本记录引用该既有证据，不将其表述为本轮干净验收结果。
+- 远程和双端证据：沿用 P0-02 的 GitHub Actions `36445834084`、P0-05 的 push CI `36546950109` 和 PR CI `36546955477`；P0-05 已验证 Android debug 构建与启动测试、macOS iOS 无签名构建、iPhone 模拟器安装启动和进程存活。PR #5 合并前检查全部通过。
+- 验收结论：P0-01 至 P0-06 的工程基线证据齐备，P0-06 标记为 `DONE`。这只表示工程基线验收完成，不表示身份、业务、生产部署或正式发布已完成；下一步为用户确认 P0 阶段后再开始 P1-01。
+
+## P1-03 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-03。依赖 P1-02 的身份/组织模型与 P0-03 数据库基础已核对。
+- 范围：会话与逐次身份校验，包括登录、退出、刷新、凭据恢复、Web HttpOnly Cookie、Flutter access/refresh 凭据、每次请求重新读取成员和组织状态；不进入 P1-04 成员管理、P1-05 工作区或行政资格规则。
+- 契约：新增[会话契约](../constras/identity/session.md)及机器文件[session.json](../constras/identity/session.json)，接入契约 Schema 门禁；同步身份 OpenAPI 的会话响应字段。
+- 实现：[会话服务](../backend/internal/identity/session.go)、[PostgreSQL 存储](../backend/internal/identity/session_sql.go)、[HTTP 适配器](../backend/internal/identity/http.go)、[服务路由](../backend/cmd/server/main.go)；新增会话/密码恢复迁移 `00003_identity_sessions.sql`，数据库当前迁移版本提升为 3。
+- 测试：覆盖错误密码与未知账号统一失败、pending 激活、成员撤权、组织停用、退出重放、刷新令牌一次性轮换、密码恢复一次性及撤销既有会话；Go test/vet 已通过，机器契约测试已通过。
+- 验收命令与结果：`npm run check --prefix scripts/contracts` 通过；在 `backend` 目录执行 `go test ./...` 和 `go vet ./...` 通过。尚未设置 `POSTGRES_PASSWORD`，未执行本次专用 PostgreSQL 集成；Flutter 真实登录链路尚未接入，因此任务保持 `PARTIAL`。
+- 数据/回退：新增不可变迁移 `00003_identity_sessions.sql`；不修改已有迁移的历史语义。回退应使用新的回退迁移或回滚发布版本，不删除已有数据卷。
+- 下一步：补充专用 PostgreSQL 集成证据和 Flutter 端真实登录/凭据存储验证；在用户验收 P1-03 前不进入 P1-04。
+
+## P1-04 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-04。依赖 P1-03 的会话校验实现已核对；P1-03 本身仍保持 `PARTIAL`，本任务只复用其已交付的服务端逐次校验，不宣称 P1-03 集成验收完成。
+- 范围：本组织成员列表、创建、角色/状态更新、管理员范围校验、首位管理员保护、成员变更审计；不进入 P1-05 工作区、邀请渠道、行政资格或跨组织管理。
+- 契约：新增[成员管理契约](../constras/identity/members.md)、[成员机器契约](../constras/identity/members.json)和 Schema 门禁；更新身份契约索引。既有 OpenAPI 成员路径接入实际 HTTP handler。
+- 实现：[成员服务](../backend/internal/identity/member.go)、[PostgreSQL 存储](../backend/internal/identity/member_sql.go)、[身份 HTTP handler](../backend/internal/identity/http.go)；新增不可变迁移 `00004_member_management.sql`，建立 `member_audit_events`，数据库当前迁移版本提升为 4。
+- 规则：仅当前 active 管理员可管理同组织成员；执行人员和跨组织请求拒绝；新成员固定为 `pending`；角色按组织类型校验；首位管理员不能通过普通成员接口修改；创建、角色变化和状态变化记录审计快照。
+- 测试：覆盖执行人员拒绝、跨组织拒绝、组织类型角色拒绝、pending 创建、首位管理员保护、角色/状态审计和并发重复登录标识。契约门禁、文档治理、Go test/vet 已通过。
+- 验收命令与结果：`npm run check --prefix scripts/contracts`、`scripts/test/check-doc-governance.ps1`、`scripts/test/check-machine-contracts.ps1`、`go test ./...`、`go vet ./...` 均通过；`scripts/test/preflight.ps1` 待本轮最终执行。专用 PostgreSQL 集成未执行，HTTP 端到端和 Flutter 客户端联调未执行，任务保持 `PARTIAL`。
+- 数据/回退：只新增 `00004_member_management.sql`，不改写已提交迁移；回退使用新的回退迁移或回滚发布版本，不删除数据卷。审计记录保留成员历史，不记录密码或令牌原文。
+- 下一步：使用专用 PostgreSQL 执行迁移、并发、授权/撤权和审计集成验收，再由用户确认 P1-04；未验收前不进入 P1-05。
+
+## P1-05 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-05。依赖 P1-03、P1-04 的软件侧接口已核对；前置任务仍为 `PARTIAL`，本任务不宣称其专用 PostgreSQL 或完整端到端验收已完成。
+- 范围：Web/App 登录入口、当前身份读取、服务端身份驱动的企业/行政工作区边界、退出和失效状态清理；不进入场所、二维码、检查、订阅、支付或行政资格。
+- 契约：新增[身份入口契约](../constras/identity/entry.md)、[机器契约](../constras/identity/entry.json)及 Schema 门禁；更新身份契约索引和统一机器校验。
+- 实现：Web 新增 `apps/admin-web/src/api.ts`、`auth.ts`，入口由 `/v1/me` 当前身份决定，不使用 `localStorage` 令牌；Flutter 单 App 提供未认证、企业工作区、行政工作区和退出的最小状态边界。当前 Flutter 登录为 UI 状态测试替身，未冒充真实服务端链路。
+- 规则：未认证不暴露工作区；`enterprise` 仅进入企业工作区并可见购买占位；`department` 仅进入行政工作区；不提供自由角色切换；前端路由/隐藏菜单不作为授权来源；撤权/停用需要由下一次受保护请求观察并清理。
+- 测试：机器契约及负测、Web SSR 壳测试、Web 构建、Flutter 分析和 Flutter 测试通过。专用 PostgreSQL、真实 Web 联调、Flutter 网络请求/平台安全存储、真机撤权链路尚未执行，任务保持 `PARTIAL`。
+- 数据/回退：不新增数据库迁移，不修改已提交迁移；客户端改动可随版本回退，Web 不保存令牌到 `localStorage`。Flutter 的真实 refresh token 安全存储仍需后续契约和平台验证。
+- 下一步：补齐真实 Web/App API 联调与 Flutter 可替换网络/安全存储实现，再由用户确认 P1-05；不自动进入 P1-06。
+
+## P1-06 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-06。依赖 P1-05 的软件侧入口和身份契约已核对；本轮不扩展 P2 场所/对象或任何行政业务。
+- 范围：固定隔离测试资料中的两个企业组织和一个部门组织；验证组织隔离、企业管理员兼任执行角色、部门管理员兼任检查角色、跨组织拒绝、成员审计和撤权后现有会话立即失效。
+- 契约/证据：[P1-06 最小组织阶段验收](acceptance/p1-06-minimum-organization.md)；专用测试为 [`TestP1MinimumOrganizationAcceptance`](../backend/internal/identity/p1_acceptance_test.go)。测试资料不代表真实企业、部门、辖区、行政资格或检查授权。
+- 结果：软件侧阶段验收测试通过；两个企业和一个部门的成员列表均按组织隔离，跨组织访问被拒绝，管理员兼任场景通过，成员状态变化产生组织/操作者/目标/前后状态审计证据，已有会话在撤权后下一次服务端校验被拒绝。
+- 验收命令与结果：`go test ./internal/identity -run TestP1MinimumOrganizationAcceptance -count=1` 通过；`go test ./internal/identity` 通过；`go vet ./internal/identity` 通过；统一 `scripts/test/preflight.ps1` 通过。预检明确跳过真实 PostgreSQL 集成。
+- 未完成/边界：专用 PostgreSQL 集成、真实 Web/App 联调、Flutter 平台安全存储、真机撤权演示及外部行政资料均未在本轮完成；因此 P1-06 保持 `PARTIAL`，不自动进入 P2。

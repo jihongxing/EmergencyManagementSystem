@@ -40,7 +40,13 @@ func TestAuthorizationContract(t *testing.T) {
 }
 
 func TestRevocationUsesCurrentState(t *testing.T) {
-	member := Member{"u1", "o1", "enterprise", true, []string{"enterprise_admin"}}
+	member := Member{
+		UserID:           "u1",
+		OrganizationID:   "o1",
+		OrganizationKind: "enterprise",
+		Active:           true,
+		Roles:            []string{"enterprise_admin"},
+	}
 	if CanManageMembers(member, "o1") != "allowed" {
 		t.Fatal("active administrator denied")
 	}

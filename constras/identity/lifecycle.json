@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "clauses": ["C02-01", "C02-02", "C02-03", "C02-04", "C05-01", "C05-05"],
+  "cases": [
+    {"name": "active enterprise admin login", "operation": "login", "input": {"memberStatus": "active", "credentialsValid": true, "organizationActive": true}, "expected": {"allowed": true, "status": 200, "code": "authenticated"}},
+    {"name": "wrong password does not disclose account", "operation": "login", "input": {"memberStatus": "active", "credentialsValid": false, "organizationActive": true}, "expected": {"allowed": false, "status": 401, "code": "authentication_failed"}},
+    {"name": "revoked member login", "operation": "login", "input": {"memberStatus": "revoked", "credentialsValid": true, "organizationActive": true}, "expected": {"allowed": false, "status": 403, "code": "member_inactive"}},
+    {"name": "suspended member request", "operation": "protected_request", "input": {"memberStatus": "suspended", "sessionValid": true, "organizationActive": true}, "expected": {"allowed": false, "status": 403, "code": "member_inactive"}},
+    {"name": "revoked session replay", "operation": "protected_request", "input": {"memberStatus": "active", "sessionValid": false, "organizationActive": true}, "expected": {"allowed": false, "status": 401, "code": "authentication_required"}},
+    {"name": "inactive organization", "operation": "protected_request", "input": {"memberStatus": "active", "sessionValid": true, "organizationActive": false}, "expected": {"allowed": false, "status": 403, "code": "organization_inactive"}},
+    {"name": "enterprise admin manages same organization", "operation": "manage_member", "input": {"memberStatus": "active", "sessionValid": true, "organizationActive": true, "managerRole": "enterprise_admin", "sameOrganization": true}, "expected": {"allowed": true, "status": 201, "code": "member_created"}},
+    {"name": "executor cannot manage members", "operation": "manage_member", "input": {"memberStatus": "active", "sessionValid": true, "organizationActive": true, "managerRole": "enterprise_executor", "sameOrganization": true}, "expected": {"allowed": false, "status": 403, "code": "authorization_denied"}},
+    {"name": "cross organization management", "operation": "manage_member", "input": {"memberStatus": "active", "sessionValid": true, "organizationActive": true, "managerRole": "enterprise_admin", "sameOrganization": false}, "expected": {"allowed": false, "status": 403, "code": "authorization_denied"}},
+    {"name": "first admin without verified material", "operation": "bootstrap", "input": {"materialsVerified": false, "organizationKind": "enterprise"}, "expected": {"allowed": false, "status": 422, "code": "external_input_unverified"}},
+    {"name": "mixed organization roles", "operation": "assign_roles", "input": {"organizationKind": "enterprise", "rolesValid": false}, "expected": {"allowed": false, "status": 422, "code": "invalid_roles"}},
+    {"name": "admin and executor role combination", "operation": "assign_roles", "input": {"organizationKind": "enterprise", "rolesValid": true}, "expected": {"allowed": true, "status": 200, "code": "roles_updated"}}
+  ]
+}

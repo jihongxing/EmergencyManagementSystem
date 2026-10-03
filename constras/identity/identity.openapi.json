@@ -1,0 +1,142 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Identity and minimal organization API", "version": "0.1.0"},
+  "servers": [{"url": "/"}],
+  "tags": [{"name": "authentication"}, {"name": "members"}, {"name": "controlled-bootstrap"}],
+  "paths": {
+    "/v1/auth/login": {
+      "post": {
+        "tags": ["authentication"],
+        "operationId": "login",
+        "security": [],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LoginRequest"}}}},
+        "responses": {"200": {"description": "Authenticated", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SessionResponse"}}}}, "401": {"$ref": "#/components/responses/AuthenticationFailed"}, "403": {"$ref": "#/components/responses/MemberInactive"}}
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "tags": ["authentication"],
+        "operationId": "logout",
+        "security": [{"webSession": []}, {"mobileAccessToken": []}],
+        "responses": {"204": {"description": "Session revoked"}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}}
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "tags": ["authentication"],
+        "operationId": "refreshSession",
+        "security": [],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RefreshRequest"}}}},
+        "responses": {"200": {"description": "Refreshed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SessionResponse"}}}}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/MemberInactive"}}
+      }
+    },
+    "/v1/auth/password-reset/request": {
+      "post": {
+        "tags": ["authentication"],
+        "operationId": "requestPasswordReset",
+        "security": [],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/PasswordResetRequest"}}}},
+        "responses": {"202": {"description": "Request accepted without account disclosure"}}
+      }
+    },
+    "/v1/auth/password-reset/confirm": {
+      "post": {
+        "tags": ["authentication"],
+        "operationId": "confirmPasswordReset",
+        "security": [],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/PasswordResetConfirm"}}}},
+        "responses": {"204": {"description": "Password changed"}, "400": {"$ref": "#/components/responses/InvalidRequest"}}
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "tags": ["authentication"],
+        "operationId": "getCurrentMember",
+        "security": [{"webSession": []}, {"mobileAccessToken": []}],
+        "responses": {"200": {"description": "Current member", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Member"}}}}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/MemberInactive"}}
+      }
+    },
+    "/v1/organizations/{organizationId}/members": {
+      "get": {
+        "tags": ["members"],
+        "operationId": "listMembers",
+        "security": [{"webSession": []}, {"mobileAccessToken": []}],
+        "parameters": [{"$ref": "#/components/parameters/OrganizationId"}],
+        "responses": {"200": {"description": "Members", "content": {"application/json": {"schema": {"type": "object", "required": ["items"], "additionalProperties": false, "properties": {"items": {"type": "array", "items": {"$ref": "#/components/schemas/Member"}}}}}}}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/AuthorizationDenied"}}
+      },
+      "post": {
+        "tags": ["members"],
+        "operationId": "createMember",
+        "security": [{"webSession": []}, {"mobileAccessToken": []}],
+        "parameters": [{"$ref": "#/components/parameters/OrganizationId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateMemberRequest"}}}},
+        "responses": {"201": {"description": "Member created", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Member"}}}}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/AuthorizationDenied"}, "409": {"$ref": "#/components/responses/Conflict"}, "422": {"$ref": "#/components/responses/InvalidRequest"}}
+      }
+    },
+    "/v1/organizations/{organizationId}/members/{memberId}": {
+      "patch": {
+        "tags": ["members"],
+        "operationId": "updateMember",
+        "security": [{"webSession": []}, {"mobileAccessToken": []}],
+        "parameters": [{"$ref": "#/components/parameters/OrganizationId"}, {"$ref": "#/components/parameters/MemberId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UpdateMemberRequest"}}}},
+        "responses": {"200": {"description": "Member updated", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Member"}}}}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/AuthorizationDenied"}, "409": {"$ref": "#/components/responses/Conflict"}, "422": {"$ref": "#/components/responses/InvalidRequest"}}
+      }
+    },
+    "/v1/controlled/organizations/bootstrap": {
+      "post": {
+        "tags": ["controlled-bootstrap"],
+        "operationId": "bootstrapOrganization",
+        "security": [{"implementationAuth": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BootstrapRequest"}}}},
+        "responses": {"201": {"description": "Organization and pending first administrator created", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BootstrapResponse"}}}}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/AuthorizationDenied"}, "409": {"$ref": "#/components/responses/Conflict"}, "422": {"$ref": "#/components/responses/ExternalInputUnverified"}}
+      }
+    },
+    "/v1/controlled/organizations/{organizationId}/first-admin/replace": {
+      "post": {
+        "tags": ["controlled-bootstrap"],
+        "operationId": "replaceFirstAdministrator",
+        "security": [{"implementationAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/OrganizationId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/FirstAdminReplacementRequest"}}}},
+        "responses": {"204": {"description": "First administrator replaced"}, "401": {"$ref": "#/components/responses/AuthenticationRequired"}, "403": {"$ref": "#/components/responses/AuthorizationDenied"}, "422": {"$ref": "#/components/responses/ExternalInputUnverified"}}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "webSession": {"type": "apiKey", "in": "cookie", "name": "ems_session"},
+      "mobileAccessToken": {"type": "http", "scheme": "bearer", "bearerFormat": "short-lived-access-token"},
+      "implementationAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "controlled-implementation-credential"}
+    },
+    "parameters": {
+      "OrganizationId": {"name": "organizationId", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^org_[A-Za-z0-9_-]+$"}},
+      "MemberId": {"name": "memberId", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^mem_[A-Za-z0-9_-]+$"}}
+    },
+    "responses": {
+      "AuthenticationRequired": {"description": "Authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "AuthenticationFailed": {"description": "Authentication failed", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "MemberInactive": {"description": "Member inactive", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "AuthorizationDenied": {"description": "Authorization denied", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "InvalidRequest": {"description": "Invalid request", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Conflict": {"description": "Conflict", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "ExternalInputUnverified": {"description": "Required external material is unverified", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    },
+    "schemas": {
+      "LoginRequest": {"type": "object", "required": ["loginId", "password", "client"], "additionalProperties": false, "properties": {"loginId": {"type": "string", "minLength": 1}, "password": {"type": "string", "minLength": 8}, "client": {"enum": ["web", "flutter_android", "flutter_ios"]}}},
+      "RefreshRequest": {"type": "object", "required": ["refreshToken", "client"], "additionalProperties": false, "properties": {"refreshToken": {"type": "string", "minLength": 1}, "client": {"enum": ["web", "flutter_android", "flutter_ios"]}}},
+      "PasswordResetRequest": {"type": "object", "required": ["loginId"], "additionalProperties": false, "properties": {"loginId": {"type": "string", "minLength": 1}}},
+      "PasswordResetConfirm": {"type": "object", "required": ["resetToken", "newPassword"], "additionalProperties": false, "properties": {"resetToken": {"type": "string", "minLength": 1}, "newPassword": {"type": "string", "minLength": 8}}},
+      "SessionResponse": {"type": "object", "required": ["member", "expiresAt"], "additionalProperties": false, "properties": {"member": {"$ref": "#/components/schemas/Member"}, "accessToken": {"type": "string", "minLength": 1}, "refreshToken": {"type": "string", "minLength": 1}, "expiresAt": {"type": "string", "format": "date-time"}}},
+      "CreateMemberRequest": {"type": "object", "required": ["loginId", "roles"], "additionalProperties": false, "properties": {"loginId": {"type": "string", "minLength": 1}, "roles": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["enterprise_admin", "enterprise_executor", "department_admin", "inspector"]}}}},
+      "UpdateMemberRequest": {"type": "object", "minProperties": 1, "additionalProperties": false, "properties": {"status": {"enum": ["active", "suspended", "revoked"]}, "roles": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["enterprise_admin", "enterprise_executor", "department_admin", "inspector"]}}}},
+      "BootstrapRequest": {"type": "object", "required": ["organizationKind", "organizationName", "externalKey", "firstAdminLoginId", "materials"], "additionalProperties": false, "properties": {"organizationKind": {"enum": ["enterprise", "department"]}, "organizationName": {"type": "string", "minLength": 1}, "externalKey": {"type": "string", "minLength": 1, "maxLength": 200}, "firstAdminLoginId": {"type": "string", "minLength": 1, "maxLength": 200}, "materials": {"type": "array", "minItems": 1, "items": {"$ref": "#/components/schemas/MaterialReference"}}}},
+      "FirstAdminReplacementRequest": {"type": "object", "required": ["newAdminLoginId", "materials"], "additionalProperties": false, "properties": {"newAdminLoginId": {"type": "string", "minLength": 1}, "materials": {"type": "array", "minItems": 1, "items": {"$ref": "#/components/schemas/MaterialReference"}}}},
+      "MaterialReference": {"type": "object", "required": ["sourceId", "verified"], "additionalProperties": false, "properties": {"sourceId": {"type": "string", "minLength": 1}, "verified": {"const": true}}},
+      "BootstrapResponse": {"type": "object", "required": ["organization", "firstAdmin"], "additionalProperties": false, "properties": {"organization": {"$ref": "#/components/schemas/Organization"}, "firstAdmin": {"$ref": "#/components/schemas/Member"}}},
+      "Organization": {"type": "object", "required": ["id", "kind", "name", "externalKey", "status", "createdAt"], "additionalProperties": false, "properties": {"id": {"type": "string"}, "kind": {"enum": ["enterprise", "department"]}, "name": {"type": "string"}, "externalKey": {"type": "string"}, "status": {"enum": ["active", "suspended", "closed"]}, "createdAt": {"type": "string", "format": "date-time"}}},
+      "Member": {"type": "object", "required": ["id", "userId", "organizationId", "loginId", "status", "roles"], "additionalProperties": false, "properties": {"id": {"type": "string"}, "userId": {"type": "string"}, "organizationId": {"type": "string"}, "loginId": {"type": "string"}, "status": {"enum": ["pending", "active", "suspended", "revoked"]}, "roles": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}}},
+      "Error": {"type": "object", "required": ["code", "message", "requestId"], "additionalProperties": false, "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "requestId": {"type": "string"}}}
+    }
+  }
+}

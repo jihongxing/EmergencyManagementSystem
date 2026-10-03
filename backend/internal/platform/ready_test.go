@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -47,11 +48,12 @@ func TestReadyContract(t *testing.T) {
 		NewHandler(check).ServeHTTP(resp, httptest.NewRequest("GET", "/health/ready", nil))
 		expected := contract.Paths["/health/ready"].Get.Responses[tc.key].Content["application/json"].Schema.Properties["status"].Const
 		var body map[string]string
-		if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil || expected == "" || body["status"] != expected || len(body) != 1 || resp.Code != tc.code {
+		if err := json.Unmarshal(resp.Body.Bytes(), &body); err != nil || expected == "" || body["status"] != expected ||
+			len(body) != 1 || resp.Code != tc.code || resp.Header().Get("Content-Type") != "application/json; charset=utf-8" {
 			t.Fatalf("contract mismatch: %d %s", resp.Code, resp.Body.String())
 		}
 		live := httptest.NewRecorder()
-		NewHandler(check).ServeHTTP(live, httptest.NewRequest("GET", "/health/live", nil))
+		NewHandler(check).ServeHTTP(live, httptest.NewRequest(http.MethodGet, "/health/live", nil))
 		if live.Code != 200 {
 			t.Fatal("liveness depends on database")
 		}

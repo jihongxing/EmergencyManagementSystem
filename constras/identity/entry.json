@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "module": "identity-entry",
+  "clauses": ["C02-01", "C02-02", "C02-03", "C02-04", "C05-01", "C05-03"],
+  "policies": [
+    {
+      "id": "entry-workspace",
+      "allowWhen": "authenticated service member with active organization",
+      "cases": [
+        {"name": "enterprise workspace", "organizationKind": "enterprise", "allowed": true, "workspace": "enterprise"},
+        {"name": "department workspace", "organizationKind": "department", "allowed": true, "workspace": "department"},
+        {"name": "missing authentication", "organizationKind": null, "allowed": false, "workspace": null},
+        {"name": "unknown organization kind", "organizationKind": "province", "allowed": false, "workspace": null}
+      ]
+    },
+    {
+      "id": "purchase-boundary",
+      "allowWhen": "enterprise workspace is selected by server identity",
+      "cases": [
+        {"name": "enterprise can see purchase placeholder", "organizationKind": "enterprise", "allowed": true},
+        {"name": "department cannot see purchase placeholder", "organizationKind": "department", "allowed": false},
+        {"name": "unauthenticated cannot see purchase placeholder", "organizationKind": null, "allowed": false}
+      ]
+    }
+  ],
+  "manualClauses": ["logout clears sensitive client state", "refresh failure returns to login", "revocation is observed on the next protected request"]
+}

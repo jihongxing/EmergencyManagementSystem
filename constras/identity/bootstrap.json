@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "module": "identity-bootstrap",
+  "source": ["C02-01", "C02-02", "C02-03", "C02-04"],
+  "policies": [
+    {
+      "id": "bootstrap-verified-material",
+      "clauses": ["C02-01", "C02-02", "C02-04"],
+      "facts": ["controlledOperator", "stableExternalKey", "materialsVerified"],
+      "allowWhen": {"controlledOperator": true, "stableExternalKey": true, "materialsVerified": true},
+      "cases": [
+        {"name": "verified controlled bootstrap", "input": {"controlledOperator": true, "stableExternalKey": true, "materialsVerified": true}, "allowed": true},
+        {"name": "unverified material", "input": {"controlledOperator": true, "stableExternalKey": true, "materialsVerified": false}, "allowed": false}
+      ]
+    },
+    {
+      "id": "replace-first-admin",
+      "clauses": ["C02-02", "C02-03", "C02-04"],
+      "facts": ["controlledOperator", "materialsVerified", "organizationExists"],
+      "allowWhen": {"controlledOperator": true, "materialsVerified": true, "organizationExists": true},
+      "cases": [
+        {"name": "verified replacement", "input": {"controlledOperator": true, "materialsVerified": true, "organizationExists": true}, "allowed": true},
+        {"name": "missing organization", "input": {"controlledOperator": true, "materialsVerified": true, "organizationExists": false}, "allowed": false}
+      ]
+    }
+  ],
+  "manualClauses": []
+}

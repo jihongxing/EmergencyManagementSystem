@@ -8,6 +8,10 @@ import (
 )
 
 func NewHandler(checks ...func(context.Context) error) http.Handler {
+	return NewHandlerWithRoutes(nil, checks...)
+}
+
+func NewHandlerWithRoutes(routes map[string]http.Handler, checks ...func(context.Context) error) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -27,5 +31,8 @@ func NewHandler(checks ...func(context.Context) error) http.Handler {
 		}
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": status})
 	})
+	for pattern, handler := range routes {
+		mux.Handle(pattern, handler)
+	}
 	return mux
 }
