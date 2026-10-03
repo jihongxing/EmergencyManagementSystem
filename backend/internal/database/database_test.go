@@ -74,6 +74,16 @@ func TestIntegration(t *testing.T) {
 	if err := Ready(db)(ctx); err != nil {
 		t.Fatal(err)
 	}
+	for _, table := range []string{
+		"ems.organizations",
+		"ems.members",
+		"ems.organization_materials",
+		"ems.identity_audit_events",
+	} {
+		if err := db.QueryRowContext(ctx, "SELECT to_regclass($1) IS NOT NULL", table).Scan(&exists); err != nil || !exists {
+			t.Fatalf("identity bootstrap table missing: %s (%v)", table, err)
+		}
+	}
 	assertHTTP(200)
 	files := fstest.MapFS{
 		"00002_failure.sql": &fstest.MapFile{Data: []byte("-- +goose Up\nCREATE TABLE ems.must_rollback (id int);\nSELECT 1/0;\n")},

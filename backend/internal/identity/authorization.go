@@ -9,6 +9,18 @@ type Member struct {
 	OrganizationKind string   `json:"organizationKind"`
 	Active           bool     `json:"active"`
 	Roles            []string `json:"roles"`
+	ID               string   `json:"id,omitempty"`
+	LoginID          string   `json:"loginId,omitempty"`
+	Status           string   `json:"status,omitempty"`
+	FirstAdmin       bool     `json:"firstAdmin,omitempty"`
+}
+
+func (m Member) IsFirstAdmin() bool {
+	return m.FirstAdmin
+}
+
+func (m *Member) SetFirstAdmin() {
+	m.FirstAdmin = true
 }
 
 // CanManageMembers does not authorize first-administrator replacement or

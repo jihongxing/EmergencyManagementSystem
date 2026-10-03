@@ -20,6 +20,7 @@ export async function validateMachineSchemas(directory = contractRoot) {
       '03-rules-and-records.json', '04-subscription.json', '05-platform.json',
     ]],
     ['identity.schema.json', ['identity/authorization.json']],
+    ['bootstrap.schema.json', ['identity/bootstrap.json']],
     ['identity-lifecycle.schema.json', ['identity/lifecycle.json']],
   ]) {
     const schema = JSON.parse(await readFile(resolve(import.meta.dirname, schemaName), 'utf8'));
@@ -37,6 +38,7 @@ export async function validateMachineSchemas(directory = contractRoot) {
       id: 'org_o1',
       kind: 'enterprise',
       name: 'Fixture Enterprise',
+      externalKey: 'fixture-enterprise',
       status: 'active',
       createdAt: '2026-10-03T00:00:00Z',
     },

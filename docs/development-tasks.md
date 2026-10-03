@@ -30,7 +30,7 @@
 | ID / 状态 | 任务与依赖 | 交付及验收标准 |
 | --- | --- | --- |
 | P1-01 / DONE | 身份/组织模块设计与契约；依赖 P0-06 | 明确登录凭据、激活/重置/失效、会话、首位管理员操作入口、四角色与兼任边界；OpenAPI、数据约束、错误/状态案例齐备；凭据选择待确认，不暗中引入公众注册 |
-| P1-02 / TODO | 组织及首位管理员开通；依赖 P1-01、P0-03 | 持久化组织/成员及线下材料来源、开通人；受控实施入口不成为日常第五角色；重复开通防护、更换核验留痕；测试材料只在隔离环境 |
+| P1-02 / PARTIAL | 组织及首位管理员开通；依赖 P1-01、P0-03 | 持久化组织/成员及线下材料来源、开通人；受控实施入口不成为日常第五角色；重复开通防护、更换核验留痕；测试材料只在隔离环境 |
 | P1-03 / TODO | 会话与逐次身份校验；依赖 P1-02 | 登录/退出/凭据恢复、移动端安全存储、Web 会话防护；每次读取当前成员状态；失效凭据、撤权后旧请求、错误密码等测试通过，不只依赖前端隐藏入口 |
 | P1-04 / PARTIAL | 本方成员管理与审计；依赖 P1-03 | 复用内部 CanManageMembers 及机器案例；补 API、数据库、授权/撤销审计和首位管理员保护；并发授权/撤权、越权管理、保留历史执行人等集成测试通过 |
 | P1-05 / TODO | Web/App 身份入口；依赖 P1-03、P1-04 | 单 App 依据服务端身份进入企业/行政工作区；部门 Web 与组织购买会话边界隔离；退出/撤权清理敏感状态，无自由角色切换授予权限 |
@@ -47,6 +47,21 @@
 - 机器门禁：扩展 `scripts/contracts/validate.mjs` 实际解析身份数据 Schema、生命周期 Schema 和身份 OpenAPI；扩展 `validate.test.mjs` 覆盖生命周期未知字段负测。文档治理、机器契约检查和契约测试均通过。
 - 未冻结/未伪造内容：恢复渠道、密码策略强度、密钥托管、生产部署、实施人员凭据、行政资格材料及试点外部输入仍不在本任务内；OpenAPI 中受控实施安全方案只是接口边界，不表示实施凭据已经实现。
 - 结果：P1-01 验收通过，下一步为 P1-02 组织及首位管理员开通；在用户明确推进前不自动开始 P1-02。
+
+## P1-02 执行记录
+
+- 日期/负责人：2026-10-03，Codex；用户已正式批准实施 P1-02。
+- 依赖核验：P1-01 身份/组织模块契约已完成；P0-03 数据库连接、迁移和就绪基础已完成；当前未进入 P1-03 登录/会话实现。
+- 契约：新增[组织及首位管理员开通契约](../constras/identity/bootstrap.md)及机器契约[bootstrap.json](../constras/identity/bootstrap.json)，新增专用 JSON Schema 并接入 `scripts/contracts` 实际解析；扩展身份 OpenAPI、组织数据形状和模块约束。
+- 实现：新增 `ems.organizations`、`ems.members`、`ems.organization_materials`、`ems.identity_audit_events` 迁移；实现受控开通与首位管理员更换服务、内存验收存储及 PostgreSQL 事务存储。开通只创建 `pending` 首位管理员，不接收初始密码；材料核验、稳定外部标识、组织唯一性、旧管理员撤销和审计均在服务/数据库约束中执行。
+- 测试与验收：
+  - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/check-doc-governance.ps1`：通过。
+  - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test/check-machine-contracts.ps1`：通过。
+  - `npm run check --prefix scripts/contracts`：通过，2 个契约测试通过。
+  - `go test ./...`（工作目录 `backend`）：通过。
+  - `go vet ./...`（工作目录 `backend`）：通过。
+  - 数据库真实集成验证：本轮未设置专用 `TEST_DATABASE_URL`，未将单元测试冒充 PostgreSQL 集成通过；迁移文件已纳入 Goose，下一次提供隔离数据库后执行。
+- 结果：P1-02 的契约、代码、单元测试和治理门禁完成；因本轮未提供专用 PostgreSQL 数据库，真实迁移/事务集成验收尚未完成，任务保持 `PARTIAL`。P1-03 登录、会话、凭据恢复和激活仍未开始；P1-06 阶段验收未完成。
 
 ## P2 场所、对象与二维码
 
